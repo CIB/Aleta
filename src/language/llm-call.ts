@@ -1,5 +1,4 @@
 import { z, ZodObject } from 'zod';
-import { getOllamaCompletion, parseJSONResponse } from '../gpt/ollama';
 import { assertType, isObjectSchema, normalizeSchema, Schema, validateType } from './type-checker';
 import assert from 'assert';
 import { LLMOptionsWithBackend, SystemContext } from '../system/system-context';
@@ -75,9 +74,8 @@ export async function runLLMCall(
   }
 
   try {
-    const response = await system.prompt(prompt);
-
-    const output = parseJSONResponse(response);
+    const response = await system.prompt(prompt, { json: true });
+    const output = JSON.parse(response);
 
     assertType(output, outputWrapped);
 
