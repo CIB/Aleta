@@ -4,6 +4,7 @@ import { LLMBackend, LLMOptions } from '../llm/llm-backend';
 import { OpenAIBackend } from '../llm/openai-backend';
 import { Tree } from '../tree/tree';
 import type { Dictionary } from 'lodash';
+import { DummyBackend } from '../llm/dummy-backend';
 
 export interface LLMOptionsWithBackend extends LLMOptions {
   backend?: string;
@@ -15,15 +16,20 @@ export class SystemContext {
   backends: Dictionary<LLMBackend> = {};
   cache: CacheDriver = new TemporaryCacheDriver();
 
-  constructor() {
-    assert(process.env.OPENROUTER_API_KEY, 'OPENROUTER_API_KEY is not set');
+  constructor(defaultBackend?: LLMBackend) {
     this.tree = new Tree();
-    this.backends.default = new OpenAIBackend(
-      this.cache,
-      'https://openrouter.ai/api/v1',
-      process.env.OPENROUTER_API_KEY,
-      ['gpt-4o-mini', 'gpt-4o', 'deepseek/deepseek-chat'],
-    );
+
+    if (defaultBackend) {
+      this.backends.default = defaultBackend;
+    } else {
+      assert(process.env.OPENROUTER_API_KEY, 'OPENROUTER_API_KEY is not set');
+      this.backends.default = new OpenAIBackend(
+        this.cache,
+        'https://openrouter.ai/api/v1',
+        process.env.OPENROUTER_API_KEY,
+        ['gpt-4o-mini', 'gpt-4o', 'deepseek/deepseek-chat'],
+      );
+    }
   }
 
   async prompt(question: string, options: LLMOptionsWithBackend = {}) {

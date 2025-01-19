@@ -2,15 +2,14 @@ import { expect, test, describe, beforeEach } from 'bun:test';
 import { Tree } from '../tree/tree';
 import { runFunction } from '../language/function';
 import { ExecutionContext } from '../language/execution-context';
-import { Schema } from '../language/type-checker';
-import { SystemContext } from '../system/system-context';
+import { createTestSystemContext } from '../system/test-system-context';
 
 describe('Function Execution', () => {
   let tree: Tree;
   let executionContext: ExecutionContext;
 
   beforeEach(() => {
-    const system = new SystemContext();
+    const system = createTestSystemContext();
     tree = system.tree;
     executionContext = new ExecutionContext(system, []);
   });

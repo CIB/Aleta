@@ -1,14 +1,14 @@
 import { expect, test, describe, beforeEach } from 'bun:test';
 import { ExecutionContext, getFrameAtPath } from '../language/execution-context';
 import { PathError, Tree } from '../tree/tree';
-import { SystemContext } from '../system/system-context';
+import { createTestSystemContext } from '../system/test-system-context';
 
 describe('ExecutionContext', () => {
   let tree: Tree;
   let context: ExecutionContext;
 
   beforeEach(() => {
-    const system = new SystemContext();
+    const system = createTestSystemContext();
     tree = system.tree;
     context = new ExecutionContext(system, ['stackframe']);
   });

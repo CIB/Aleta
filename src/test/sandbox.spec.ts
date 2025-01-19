@@ -1,12 +1,11 @@
 import { expect, test, describe } from 'bun:test';
-import { PathError, Tree } from '../tree/tree';
+import { PathError } from '../tree/tree';
 import { runInSandbox, inferReturnType } from '../language/sandbox/sandbox';
-import { SystemContext } from '../system/system-context';
-import { DummyBackend } from '../llm/dummy-backend';
+import { createTestSystemContext } from '../system/test-system-context';
 
 describe('Sandbox', () => {
   test('should execute simple code in sandbox', async () => {
-    const system = new SystemContext();
+    const system = createTestSystemContext();
     const tree = system.tree;
     tree.set(['config', 'timeout'], 5000);
     tree.set(['user', 'name'], 'John');
@@ -26,7 +25,7 @@ describe('Sandbox', () => {
   });
 
   test('should execute async code in sandbox', async () => {
-    const system = new SystemContext();
+    const system = createTestSystemContext();
     const tree = system.tree;
     tree.set(['config', 'timeout'], 5000);
     tree.set(['user', 'name'], 'John');
@@ -110,7 +109,7 @@ describe('Sandbox', () => {
 
   describe('Side Effects', () => {
     test('should handle set operation', async () => {
-      const system = new SystemContext();
+      const system = createTestSystemContext();
       const tree = system.tree;
       tree.set(['config', 'timeout'], 5000);
 
@@ -129,7 +128,7 @@ describe('Sandbox', () => {
     });
 
     test('should handle push operation', async () => {
-      const system = new SystemContext();
+      const system = createTestSystemContext();
       const tree = system.tree;
       tree.patchList(['items']);
 
@@ -148,7 +147,7 @@ describe('Sandbox', () => {
     });
 
     test('should handle delete operation', async () => {
-      const system = new SystemContext();
+      const system = createTestSystemContext();
       const tree = system.tree;
       tree.set(['config', 'timeout'], 5000);
 
@@ -167,7 +166,7 @@ describe('Sandbox', () => {
     });
 
     test('should handle get operation', async () => {
-      const system = new SystemContext();
+      const system = createTestSystemContext();
       const tree = system.tree;
       tree.set(['config', 'timeout'], 5000);
 
@@ -187,7 +186,7 @@ describe('Sandbox', () => {
 
   describe('Root Operations', () => {
     test('should handle root set operation', async () => {
-      const system = new SystemContext();
+      const system = createTestSystemContext();
       const tree = system.tree;
 
       await runInSandbox(
@@ -203,7 +202,7 @@ describe('Sandbox', () => {
     });
 
     test('should handle root get operation', async () => {
-      const system = new SystemContext();
+      const system = createTestSystemContext();
       const tree = system.tree;
       tree.set(['config', 'timeout'], 5000);
 
@@ -220,7 +219,7 @@ describe('Sandbox', () => {
     });
 
     test('should handle root push operation', async () => {
-      const system = new SystemContext();
+      const system = createTestSystemContext();
       const tree = system.tree;
 
       await runInSandbox(
@@ -238,7 +237,7 @@ describe('Sandbox', () => {
     });
 
     test('should handle root delete operation', async () => {
-      const system = new SystemContext();
+      const system = createTestSystemContext();
       const tree = system.tree;
       tree.set(['config', 'timeout'], 5000);
 
@@ -264,7 +263,7 @@ describe('Sandbox', () => {
     });
 
     test('should handle root getNodes operation', async () => {
-      const system = new SystemContext();
+      const system = createTestSystemContext();
       const tree = system.tree;
       tree.set(['config', 'timeout'], 5000);
       tree.set(['config', 'retries'], 3);
@@ -286,8 +285,7 @@ describe('Sandbox', () => {
   });
 
   test('should handle LLM calls through root.llm', async () => {
-    const system = new SystemContext();
-    system.backends.default = new DummyBackend(system.cache, '{ "result": "olleh" }');
+    const system = createTestSystemContext('{ "result": "olleh" }');
     const tree = system.tree;
 
     // Set up an LLM template in the tree
@@ -312,8 +310,7 @@ describe('Sandbox', () => {
   });
 
   test('should handle LLM calls through llm', async () => {
-    const system = new SystemContext();
-    system.backends.default = new DummyBackend(system.cache, '{ "result": "olleh" }');
+    const system = createTestSystemContext('{ "result": "olleh" }');
     const tree = system.tree;
 
     tree.createModule(['module']);

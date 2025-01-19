@@ -1,14 +1,15 @@
-import { expect, test, describe, beforeEach } from 'bun:test';
-import { PathError, Tree, path as p } from '../../tree/tree';
-import { SystemContext } from '../../system/system-context';
+import { describe, beforeEach } from 'bun:test';
+import { Tree, path as p } from '../../tree/tree';
+
 import { ExecutionContext } from '../../language/execution-context';
+import { createTestSystemContext } from '../../system/test-system-context';
 
 describe('ExecutionContext', () => {
   let tree: Tree;
   let context: ExecutionContext;
 
   beforeEach(() => {
-    const system = new SystemContext();
+    const system = createTestSystemContext('{ "result": "true" }');
     tree = system.tree;
     context = new ExecutionContext(system, ['stackframe']);
 
