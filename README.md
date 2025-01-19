@@ -1,78 +1,72 @@
-- LLM-first programming language
-- Main primitive types are strings and lists/dictionaries (simple for LLMs to work with)
+WARNING: This project is currently in the early prototyping / concept phase. Proceed with caution before running any code contained in this repository.
 
-- Base operations:
-  - Filter
-  - Evaluate condition
-  - AND
-  - OR
-  - NOT
+# LLeta - LLM-first Programming System
 
-Primitive LLM operations:
+LLeta is an AI-first programming system that handles code and data in a unified and standardized manner, allowing simplified development of LLM agents with introspection capabilities. LLeta's mission is enabling developers to build intelligent systems that can reason, adapt, and solve complex problems.
 
-- Transform
-  - Input:
-    - content (string or list)
-    - input type
-    - output type
-    - result expectation (free text)
-  - Output:
-    - result (string or list)
+## Key Features
 
-A transform in particular can be used as a condition by using a boolean output type and a result expectation that describes the condition.
+- **Tree-based Data Structure**: All data and operations are stored in a central tree structure, allowing for easy reference and manipulation
+- **LLM Integration**: Native support for LLM calls with structured prompts, examples, and constraints
+- **Type Safety**: Strong typing system for both data and operations
+- **Modular Design**: Functions and modules can reference each other without full path specifications
+- **Task Management**: Built-in support for task decomposition and execution tracking
+- **Extensibility**: Ability to define custom types, recipes, and operations
+- **Self-reinforcment**: As LLeta's capabilities to solve programming tasks improve, it can also apply those improvements to its own codebase
 
-- Recipe
-  - Input:
-    - handle (ref to entity in model)
-    - input type
-    - output type
-    - result expectation
-  - Output:
-    - result (ref to entity in model)
-  - State:
-    - Examples (input output pairs)
-    - Constraints (list of conditions for the output)
-    - Conditionals (if X about input is true, then Y)
+## Core Concepts
 
-Meta-operations:
+### Tree Structure
 
-- MAP
-  - Takes list and some operation
-  - For each element in the list, applies the operation to compute a result
-  - Returns list of results
-  - (it works the same with dictionaries)
-- AND
-  - Returns true if all elements in the list are true
-- OR
-  - Returns true if at least one element in the list is true
-- NOT
-  - Returns true if the element is false and vice versa
-- IF
-  - Takes a boolean and two operations
-  - If the boolean is true, applies the first operation, otherwise the second
-  - Returns the result
-- SWITCH CASE
-  - Takes a list of pairs (item, condition)
-  - For each element in the list, checks the condition
-  - For the first element where the condition is true, evaluate the item and return the result
-- FILTER
-  - Takes a list and a condition
-  - Returns a list of only those elements that satisfy the condition
-- SORT
-  - Takes a list and an operation
-  - Returns a list sorted by the result of the operation
-- TAKE
+The central tree stores all information including:
 
-  - Takes a list and a number
-  - Returns a list of the first N elements
+- Function definitions
+- LLM templates
+- Task trees
+- Knowledge bases (types, recipes, personality)
+- External API/tool definitions
+- Project/codebase representations
 
-- tree
-  - every node has a type
-  - nodes are key/value pairs
-  - every key/value has a type
-  - values can be lists with list type
-  - values can be dictionaries with dictionary type
-  - reference nodes by path from the root
-  - tasks are nodes
-  - recipes are nodes (and can be dynamically adjusted by modifying the node)
-  - operations are nodes
+Items in the tree can be referenced by path, e.g. `personality/hobbies/coding`.
+
+### Functions
+
+Functions can be defined in TypeScript and stored in the tree. They can:
+
+- Accept typed inputs
+- Produce typed outputs
+- Reference other functions and LLM templates
+- Interact with the central tree (read and write)
+
+Example:
+
+```yaml
+utils/set_timeout:
+  input: number
+  code: |
+    $$set('config/timeout', input);
+    return $$\`config/timeout\`;
+```
+
+### LLM Integration
+
+LLeta provides native support for LLM calls with:
+
+- Structured prompt templates
+- Type boundaries for input/output
+- Example-based refinement
+- Constraint enforcement
+
+Example LLM template:
+
+```yaml
+llm utils/reverse_string:
+  input: string
+  output: string
+  examples:
+    - input: 'Foo bar'
+      output: 'rab ooF'
+    - input: 'Hello, world!'
+      output: '!dlrow ,olleH'
+  prompt: 'Reverse the string'
+```
