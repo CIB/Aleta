@@ -1,6 +1,6 @@
 ## Tree structure
 
-The main place for lleta to store data and gain access to external entities is the central tree. This tree stores all information, including:
+The main place for aleta to store data and gain access to external entities is the central tree. This tree stores all information, including:
 
 - Function definitions
 - LLM templates

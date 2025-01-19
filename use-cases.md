@@ -37,7 +37,7 @@ Code review:
 
 ## Unstuck Code Solving Task
 
-When trying to solve a coding related task, and getting stuck, lleta should be able to examine the steps taken so far, and find issues in the approach, and re-plan the approach from scratch. The current approach and its results should be summarized so they can be recalled later when re-solving the task with the new approach.
+When trying to solve a coding related task, and getting stuck, aleta should be able to examine the steps taken so far, and find issues in the approach, and re-plan the approach from scratch. The current approach and its results should be summarized so they can be recalled later when re-solving the task with the new approach.
 
 ## Code debug
 
@@ -49,17 +49,17 @@ When trying to solve a coding related task, and getting stuck, lleta should be a
 
 ## Program source code modularity
 
-Lleta should over time learn how to structure code bases well, and which criteria they should fulfill to be modular. Furthermore, as the codebase grows, lleta should be able to refactor the codebase to split modules into smaller modules, while keeping the same functionality.
+Aleta should over time learn how to structure code bases well, and which criteria they should fulfill to be modular. Furthermore, as the codebase grows, aleta should be able to refactor the codebase to split modules into smaller modules, while keeping the same functionality.
 
 ## Rewrite internal recipes
 
-While at the start, internal recipes (for solving tasks at a low level etc.) will be builtin, over time as they get improved, we may have enough data that lleta may learn about how to improve the recipes and create new ones. This should also involve some kind of versioning, and evaluation of different versions of the recipes to compare them.
+While at the start, internal recipes (for solving tasks at a low level etc.) will be builtin, over time as they get improved, we may have enough data that aleta may learn about how to improve the recipes and create new ones. This should also involve some kind of versioning, and evaluation of different versions of the recipes to compare them.
 
 ## Generating fine-tuning training data
 
-In the course of operation, lleta will often face problems in the style of: Get a task with natural language description, do some recursive solving using tasks, and finally generate a response. In many cases, we may be able to throw out the intermediate steps at the end, and use the prompt + result as training data for later fine-tuning of a custom model for lleta.
+In the course of operation, aleta will often face problems in the style of: Get a task with natural language description, do some recursive solving using tasks, and finally generate a response. In many cases, we may be able to throw out the intermediate steps at the end, and use the prompt + result as training data for later fine-tuning of a custom model for aleta.
 
-## "Drill back" issue resolving for wrong solutions provided by lleta
+## "Drill back" issue resolving for wrong solutions provided by aleta
 
 1. Identity the issue with help of human
 2. Use stack trace and tree versioning to identity original issue
@@ -75,7 +75,7 @@ When a recipe has become too big with too many cases, it may be that it is handl
 ## Accessing trello
 
 1. Give general instructions of how to access the board, API key, and link to API docs
-2. Lleta will research the API autonomously and build recipes to access the board, read tasks, update tasks, etc.
+2. Aleta will research the API autonomously and build recipes to access the board, read tasks, update tasks, etc.
 
 ## Fix type issue in code after surrounding code is changed
 
@@ -103,4 +103,4 @@ Creating loops over documents and the like, and performing actions. For example,
 ## Entity recognition
 
 1. In the context of working on tasks, we may identify entities in the process in order to structure the ideas we're working with
-2. For example, when preparing for an auction on the auction system (where lleta may want to upscale servers in preparation), we can identify the auction as an entity, and store properties like "IS_ONLIVE", "START_TIME", etc.
+2. For example, when preparing for an auction on the auction system (where aleta may want to upscale servers in preparation), we can identify the auction as an entity, and store properties like "IS_ONLIVE", "START_TIME", etc.

@@ -1,6 +1,6 @@
 # Execution Tree
 
-Unlike a regular program execution, where the details of the execution flow matter very little and can be lost instantly, lleta's execution tree needs to be preserved for introspection and debugging purposes.
+Unlike a regular program execution, where the details of the execution flow matter very little and can be lost instantly, aleta's execution tree needs to be preserved for introspection and debugging purposes.
 
 In other words, for each function call, we have to intercept the call and manually manage stack frames (with debugging info).
 

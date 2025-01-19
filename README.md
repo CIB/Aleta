@@ -1,8 +1,8 @@
 WARNING: This project is currently in the early prototyping / concept phase. Proceed with caution before running any code contained in this repository.
 
-# LLeta - LLM-first Programming System
+# Aleta - LLM-first Programming System
 
-LLeta is an AI-first programming system that handles code and data in a unified and standardized manner, allowing simplified development of LLM agents with introspection capabilities. LLeta's mission is enabling developers to build intelligent systems that can reason, adapt, and solve complex problems.
+Aleta is an AI-first programming system that handles code and data in a unified and standardized manner, allowing simplified development of LLM agents with introspection capabilities. Aleta's mission is enabling developers to build intelligent systems that can reason, adapt, and solve complex problems.
 
 ## Key Features
 
@@ -12,7 +12,7 @@ LLeta is an AI-first programming system that handles code and data in a unified 
 - **Modular Design**: Functions and modules can reference each other without full path specifications
 - **Task Management**: Built-in support for task decomposition and execution tracking
 - **Extensibility**: Ability to define custom types, recipes, and operations
-- **Self-reinforcment**: As LLeta's capabilities to solve programming tasks improve, it can also apply those improvements to its own codebase
+- **Self-reinforcment**: As Aleta's capabilities to solve programming tasks improve, it can also apply those improvements to its own codebase
 
 ## Core Concepts
 
@@ -50,7 +50,7 @@ utils/set_timeout:
 
 ### LLM Integration
 
-LLeta provides native support for LLM calls with:
+Aleta provides native support for LLM calls with:
 
 - Structured prompt templates
 - Type boundaries for input/output

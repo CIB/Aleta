@@ -200,7 +200,7 @@ Building blocks:
 
 A really good example of how humans use "invariants" or assumptions / reasoning in coding is: https://www.youtube.com/watch?v=KWB-gDVuy_I
 
-It would be good if Lleta could develop its own reasoning mechanisms to understand code in such ways.
+It would be good if Aleta could develop its own reasoning mechanisms to understand code in such ways.
 
 ## Evaluating team member performance
 
