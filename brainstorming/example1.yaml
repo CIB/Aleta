@@ -1,0 +1,18 @@
+function core/task/summarize: |
+  function (collection: string[], context: TaskNode): string {
+    return collection.join(", ");
+  }
+llm core/task/summarize/prompt:
+  input:
+  - item: string
+  - context: string
+  output: string
+  examples:
+  - input:
+      item: "The new office space has excellent natural lighting and a well-equipped kitchen area. Server response times have increased by 300% during peak hours, affecting thousands of users. The team recently had a successful holiday party with great catering. Database backups are failing silently on weekends, putting data at risk. The parking situation has improved since we added 50 new spots. Load balancer logs show multiple instances of cascade failures. The office plants are thriving thanks to the new automatic watering system. Critical security patches haven't been applied to production servers for 3 months."
+      context: 'Investigating critical system performance and reliability issues'
+    output: '300% slower response times during peaks, silent backup failures on weekends, cascade failures in load balancing, and 3-month backlog of security patches'
+  - input:
+      item: 'The marketing team launched a successful social media campaign reaching 1M views. Customer support tickets about payment failures have doubled this month. Our new coffee machine in the break room is amazing. The payment gateway is showing a 15% error rate, up from 2% last month.'
+      context: 'Investigating critical system performance and reliability issues'
+    output: '15% error rate in payment gateway, 2x increase in customer support tickets, 2% increase in payment failures'

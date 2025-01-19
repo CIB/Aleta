@@ -1,0 +1,13 @@
+root:
+  types:
+    llm_examples:
+    - input: "string" # By specifying the values as a list, we declare that the type is a list type
+      output: "string"
+  recipes:
+    reverse_string:
+      description: "Reverse a string"
+      examples:
+      - input: "hello"
+        output: "olleh"
+      - input: "world"
+        output: "dlrow"

@@ -1,0 +1,151 @@
+import { Dictionary } from 'lodash';
+import { Tree } from '../../tree/tree';
+import { extractNodeAsObject, findModule } from '../../tree/tree-helpers';
+import { getFunctionAtPath, TreeFunction } from '../function';
+import { schemaToTypeScript } from '../type-checker';
+import { SystemContext } from '../../system/system-context';
+import { LLMCall, runLLMCall } from '../llm-call';
+
+export interface SandboxContext {
+  typescriptCode: string;
+  c: Dictionary<any>;
+}
+
+export async function buildSandboxContext(
+  system: SystemContext,
+  functionPath: string[],
+  input: any,
+): Promise<SandboxContext> {
+  const context: SandboxContext = {
+    typescriptCode: '',
+    c: {},
+  };
+  const tree = system.tree;
+
+  await addInputToContext(context, getFunctionAtPath(tree, functionPath), input);
+  await addModuleToContext(context, tree, functionPath);
+  await addModuleTreeManipulationToContext(system, context, tree, functionPath);
+  await addTreeManipulationToContext(system, context, tree, functionPath);
+  return context;
+}
+
+export async function addInputToContext(context: SandboxContext, functionConfig: TreeFunction, input: any) {
+  const inputTypeDefinition = await schemaToTypeScript(functionConfig.input);
+  const defineInput = `${inputTypeDefinition}\ndeclare const input: InputType;\n`;
+  context.typescriptCode += defineInput;
+  context.c.input = input;
+}
+
+export async function addModuleToContext(context: SandboxContext, tree: Tree, functionPath: string[]) {
+  const module = findModule(tree, functionPath);
+
+  function accessModule(accessPath: string): any {
+    const splitPath = accessPath.split('/');
+    const fullPath = [...module, ...splitPath];
+    return tree.get(fullPath);
+  }
+
+  context.typescriptCode += `
+        declare const $$: {};
+      `.trim();
+  context.c.$$ = (strings: TemplateStringsArray, ...values: any[]) => {
+    const path = String.raw(strings, ...values);
+    return accessModule(path);
+  };
+}
+
+export async function addModuleTreeManipulationToContext(
+  system: SystemContext,
+  context: SandboxContext,
+  tree: Tree,
+  functionPath: string[],
+) {
+  const module = findModule(tree, functionPath);
+
+  context.c.$$push = (path: string, value: object) => {
+    const fullPath = [...module, ...path.split('/')];
+    tree.push(fullPath, value);
+  };
+
+  context.c.$$set = (path: string, value: object) => {
+    const fullPath = [...module, ...path.split('/')];
+    tree.set(fullPath, value);
+  };
+
+  context.c.$$get = (path: string) => {
+    const fullPath = [...module, ...path.split('/')];
+    return tree.get(fullPath);
+  };
+
+  context.c.$$delete = (path: string) => {
+    const fullPath = [...module, ...path.split('/')];
+    tree.delete(fullPath);
+  };
+
+  context.c.$$getNodes = (path: string) => {
+    const fullPath = [...module, ...path.split('/')];
+    return extractNodeAsObject(tree, fullPath);
+  };
+
+  context.c.$$llm = (path: string, input: any) => {
+    const fullPath = [...module, ...path.split('/')];
+    const llmConfig = extractNodeAsObject<LLMCall>(tree, fullPath);
+    return runLLMCall(system, llmConfig, input);
+  };
+
+  context.typescriptCode += `
+    declare const $$push: (path: string, value: object) => void;
+    declare const $$set: (path: string, value: object) => void;
+    declare const $$get: (path: string) => any;
+    declare const $$delete: (path: string) => void;
+    declare const $$getNodes: (path: string) => any;
+    declare const $$llm: (path: string, input: any) => Promise<any>;
+  `.trim();
+}
+
+export async function addTreeManipulationToContext(
+  system: SystemContext,
+  context: SandboxContext,
+  tree: Tree,
+  functionPath: string[],
+) {
+  context.c.$root = {
+    push: (path: string, value: object) => {
+      const fullPath = path.split('/');
+      tree.push(fullPath, value);
+    },
+    set: (path: string, value: object) => {
+      const fullPath = path.split('/');
+      tree.set(fullPath, value);
+    },
+    get: (path: string) => {
+      const fullPath = path.split('/');
+      return tree.get(fullPath);
+    },
+    delete: (path: string) => {
+      const fullPath = path.split('/');
+      tree.delete(fullPath);
+    },
+    getNodes: (path: string) => {
+      const fullPath = path.split('/');
+      return extractNodeAsObject(tree, fullPath);
+    },
+    llm: (path: string, input: any) => {
+      const fullPath = path.split('/');
+      // TODO: Validate that the path is a valid LLM call
+      const llmConfig = extractNodeAsObject<LLMCall>(tree, fullPath);
+      return runLLMCall(system, llmConfig, input);
+    },
+  };
+
+  context.typescriptCode += `
+    declare const $root: {
+      push: (path: string, value: object) => void;
+      set: (path: string, value: object) => void;
+      get: (path: string) => any;
+      delete: (path: string) => void;
+      getNodes: (path: string) => any;
+      llm: (path: string, input: any) => Promise<any>;
+    };
+  `.trim();
+}

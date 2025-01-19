@@ -1,0 +1,23 @@
+process_task_plan:
+  input: string[]
+  output: string[]
+
+  do:
+  - if: is_alternative($input)
+    then: return "parse_alternatives($input)"
+  - else if: is_command_list($input)
+    then: return process_commands($input)
+  - else if: is_list_of_alternatives($input)
+    then: return parse_alternatives($input)
+  - else: return []
+
+  module:
+    process_commands:
+      input: string
+      output: string[]
+      llm: convert $input to commands list
+
+    parse_alternatives:
+      input: string
+      output: string[]
+      llm: convert $input to alternatives list

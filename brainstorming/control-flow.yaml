@@ -1,0 +1,9 @@
+do:
+  - if: "is_list_of_alternatives($input)"
+    then:
+      - return "parse_alternatives($input)"
+  - else if: "is_list_of_commands($input)"
+    then:
+      - return "process_commands($input)"
+  - else:
+      - return "[]"

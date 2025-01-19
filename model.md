@@ -1,0 +1,3 @@
+- A model can just consist of e.g. TypeScript code that is loaded and evaluated to confirm consistency
+- "Experiments" can be run on the model by evaluating code expressions
+- Recipes can be used to answer questions, and verified using the model

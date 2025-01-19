@@ -1,0 +1,8 @@
+Write a function that takes a string and returns the string reversed.The variables from the prompt above have the following values:
+Additional constraints for the output:
+
+- Please provide the output in the following JSON format:
+
+{
+    "result": "<function code here>"
+}
