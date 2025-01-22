@@ -104,3 +104,64 @@ Creating loops over documents and the like, and performing actions. For example,
 
 1. In the context of working on tasks, we may identify entities in the process in order to structure the ideas we're working with
 2. For example, when preparing for an auction on the auction system (where aleta may want to upscale servers in preparation), we can identify the auction as an entity, and store properties like "IS_ONLIVE", "START_TIME", etc.
+
+## Creating structured task execution plans
+
+To structure a task logically, we may define task "control flow commands" and organize them in TypeScript code. This would be similar to pseudocode, but executable more easily.
+
+```typescript
+const s3BucketExists = $task('Check if S3 bucket exists');
+if (!s3BucketExists) {
+  const s3Bucket = $task('Create S3 bucket');
+}
+$task('Upload files to S3 bucket');
+```
+
+## Dry run
+
+1. Take as input a collection and a description of what to do for each item
+2. Create a function to execute on each item that performs the task, but instead of actually changing something, just collect the actions that would be performed
+3. Show the user the dry-run actions
+4. If the user is satisfied, re-run the function in non-dry-run mode
+
+## Test-driven development
+
+1. Interactively identify the functionality that should be worked on with the developer
+2. Based on the shared understanding, create a plain language test descriptoin
+3. Implement the functionality
+4. Build the test according to the plain language description using the implemented API
+
+## TTS Text Replacement
+
+1. Given an input text, replace text sequences within it to make the TTS output sound better
+2. For example replace "10k" with "ten thousand"
+3. We can store such replacement rules in the recipe (in the central tree), and based on user feedback we can add new replacement rules
+
+## Roleplay
+
+1. Given a prompt, we create a task to describe the world the player is in
+2. As part of this task, we generate a tree-based world representation in the central tree, similar to procedural generation in roguelikes
+3. After creating and refining / validating this world representation against itself, we build a text description from it to show to the player
+
+For example, we can create sub-nodes in the tree for the story for each character, and store details about them like their appearance. Similar for places we encounter, like a village as a node, with houses, people, roads etc. as sub-nodes.
+
+## Merge request deep dive
+
+Below is a prompt I gave to another AI agent system while experimenting. This prompt represents a good use case for aleta. A prompt like this should be translated to an execution plan, potentially with pseudo-code to describe the control flow and steps.
+
+```
+Please get yourself a complete list of all changes. Maybe you can write it to a file so you can reference it later. Then use that to step-by-step understand the changes, and finally create a summary.
+```
+
+So for example, this could generate an execution plan like this:
+
+```typescript
+let changedFiles;
+const changedContents = $task('Get a complete list of all changes', changedFiles);
+let summaries: string[] = [];
+for (const fileChanges of changedContents) {
+  const changeSummary = $task('Create a summary of the changes for this file', fileChanges);
+  summaries.push(changeSummary);
+}
+$task('Create a description of the merge request based on all the summaries');
+```
