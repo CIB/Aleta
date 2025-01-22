@@ -1,6 +1,7 @@
 import { CacheDriver } from './cache';
 import { LLMApiError, LLMBackend } from './llm-backend';
 import axios from 'axios';
+import colors from 'colors';
 
 export class OpenAIBackend extends LLMBackend {
   constructor(
@@ -30,6 +31,11 @@ export class OpenAIBackend extends LLMBackend {
     } = {},
   ): Promise<string> {
     const model = options.model || 'deepseek/deepseek-chat';
+    const verbose = options.verbose !== undefined ? options.verbose : true;
+
+    if (verbose) {
+      console.log(colors.cyan('Requesting'), colors.green(question));
+    }
 
     const data = {
       model,
@@ -56,6 +62,9 @@ export class OpenAIBackend extends LLMBackend {
         }
       }
       const responseContent = response.data.choices[0].message.content;
+      if (verbose) {
+        console.log(colors.cyan('Response'), colors.yellow(responseContent));
+      }
       return responseContent;
     } catch (error) {
       throw new LLMApiError(`${error}`);

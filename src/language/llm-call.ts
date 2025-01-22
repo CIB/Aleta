@@ -39,7 +39,7 @@ export async function runLLMCall(
     prompt += JSON.stringify(input);
     prompt += `\n\n`;
   } else {
-    prompt += `The input is: ${input}\n\n`;
+    prompt += `The input is: ${JSON.stringify(input)}\n\n`;
   }
 
   // Add examples if they exist
@@ -64,7 +64,7 @@ export async function runLLMCall(
     };
   }
 
-  const constraints = config.constraints.concat([
+  const constraints = (config.constraints || []).concat([
     `Please provide the output in a JSON format matching the following JSON schema: ${JSON.stringify(outputWrapped)}`,
   ]);
 
@@ -80,7 +80,7 @@ export async function runLLMCall(
     assertType(output, outputWrapped);
 
     if (wrapped) {
-      assert(output.result, 'Expected result to be wrapped in an object');
+      assert('result' in output, 'Expected result to be wrapped in an object');
       // We wrapped what we expect from the LLM, so we need to unwrap it
       return output.result;
     }

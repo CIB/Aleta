@@ -32,11 +32,16 @@ export async function runFunction(
   // Validate input type
   assertType(input, functionConfig.input);
 
-  const result = await runInSandbox(executionContext.system, functionPath, functionConfig.code, input);
+  const result = await runInSandbox(
+    executionContext.system,
+    executionContext,
+    functionPath,
+    functionConfig.code,
+    input,
+  );
 
   // Get the expected output type
-  const expectedOutputType = await inferFunctionReturnType(executionContext.system, functionPath);
-
+  const expectedOutputType = await inferFunctionReturnType(executionContext.system, executionContext, functionPath);
   // Validate output type
   assertType(result, expectedOutputType);
 

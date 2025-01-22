@@ -145,6 +145,10 @@ $task('Upload files to S3 bucket');
 
 For example, we can create sub-nodes in the tree for the story for each character, and store details about them like their appearance. Similar for places we encounter, like a village as a node, with houses, people, roads etc. as sub-nodes.
 
+### Character reaction
+
+When writing out the reaction of a specific character, we should strip out information in the prompt that the character would not know about. For example, internal monologue of the player, events that happened earlier where that character wasn't present, etc.
+
 ## Merge request deep dive
 
 Below is a prompt I gave to another AI agent system while experimenting. This prompt represents a good use case for aleta. A prompt like this should be translated to an execution plan, potentially with pseudo-code to describe the control flow and steps.

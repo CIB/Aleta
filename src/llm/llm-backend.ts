@@ -31,14 +31,13 @@ export abstract class LLMBackend {
     const verbose = options.verbose !== undefined ? options.verbose : true;
     const useCache = options.cache !== undefined ? options.cache : true;
 
-    if (verbose) {
-      console.log(colors.cyan('Requesting'), colors.green(question));
-    }
-
     // Check if the question is in cache
     let cachedAnswer = this.cacheDriver.getCachedAnswer(question, options);
     if (cachedAnswer) {
       if (verbose) {
+        if (verbose) {
+          console.log(colors.cyan('Requesting'), colors.green(question));
+        }
         console.log(colors.yellow('Cached response:'), colors.green(cachedAnswer));
       }
       return cachedAnswer;
@@ -70,23 +69,24 @@ export abstract class LLMBackend {
     let nextResponse = response;
     let i = 0;
     for (i = 0; i < 10; i++) {
-      nextResponse = await this.promptImpl(
-        'Below is a prompt along with its response. Please convert the given response to valid JSON:\n\nPrompt:\n' +
-          question +
-          '\n\nResponse:\n' +
-          response,
-        options,
-      );
-
       let parsedResponse = this.parseJSONResponse(nextResponse);
       if (parsedResponse) {
         return parsedResponse;
       }
+
+      nextResponse = await this.promptImpl(
+        'Below is a prompt along with its response. Please convert the given response to valid JSON:\n\nPrompt:\n' +
+          question +
+          '\n\nResponse:\n' +
+          response +
+          '\n\nPlease respond with the response from before converted to valid JSON.',
+        options,
+      );
     }
     throw new Error('Failed to parse JSON response after 10 attempts');
   }
 
-  parseJSONResponse(response: string): any {
+  parseJSONResponse(response: string): string | undefined {
     // Try to find the first opening { and parse the JSON from there
     const firstOpenBracket = response.indexOf('{');
     response = response.slice(firstOpenBracket);
@@ -97,7 +97,7 @@ export abstract class LLMBackend {
 
     try {
       const parsedResponse = JSON.parse(response.trim());
-      return parsedResponse;
+      return response;
     } catch (error) {
       return undefined;
     }

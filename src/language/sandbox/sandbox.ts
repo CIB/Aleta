@@ -5,6 +5,7 @@ import { TreeFunction } from '../function';
 import { Schema } from '../type-checker';
 import { buildSandboxContext } from './sandbox-context';
 import { SystemContext } from '../../system/system-context';
+import { ExecutionContext } from '../execution-context';
 
 export async function buildFunctionCode(tree: Tree, functionCode: string, typeDefinitions: string): Promise<string> {
   // Wrap the user code in an async IIFE and capture the result
@@ -21,12 +22,13 @@ export async function buildFunctionCode(tree: Tree, functionCode: string, typeDe
 
 export async function runInSandbox(
   system: SystemContext,
+  executionContext: ExecutionContext,
   functionPath: string[],
   functionCode: string,
   input: any,
 ): Promise<any> {
   const tree = system.tree;
-  const { typescriptCode, c } = await buildSandboxContext(system, functionPath, input);
+  const { typescriptCode, c } = await buildSandboxContext(system, executionContext, functionPath, input);
   const code = await buildFunctionCode(tree, functionCode, typescriptCode);
 
   // First we need to transpile the code to confirm type validity
@@ -67,9 +69,13 @@ export async function runInSandbox(
   return result;
 }
 
-export async function inferFunctionReturnType(system: SystemContext, functionPath: string[]): Promise<Schema> {
+export async function inferFunctionReturnType(
+  system: SystemContext,
+  executionContext: ExecutionContext,
+  functionPath: string[],
+): Promise<Schema> {
   const functionConfig: TreeFunction = extractNodeAsObject<TreeFunction>(system.tree, functionPath);
-  const { typescriptCode, c } = await buildSandboxContext(system, functionPath, null);
+  const { typescriptCode, c } = await buildSandboxContext(system, executionContext, functionPath, null);
   return inferReturnType(typescriptCode, functionConfig.code);
 }
 

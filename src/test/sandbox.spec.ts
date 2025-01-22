@@ -1,17 +1,29 @@
 import { expect, test, describe } from 'bun:test';
-import { PathError } from '../tree/tree';
+import { PathError, Tree } from '../tree/tree';
 import { runInSandbox, inferReturnType } from '../language/sandbox/sandbox';
 import { createTestSystemContext } from '../system/test-system-context';
+import { SystemContext } from '../system/system-context';
+import { beforeEach } from 'bun:test';
+import { ExecutionContext } from '../language/execution-context';
 
 describe('Sandbox', () => {
+  let system: SystemContext;
+  let tree: Tree;
+  let executionContext: ExecutionContext;
+
+  beforeEach(() => {
+    system = createTestSystemContext('{"result": "olleh"}');
+    tree = system.tree;
+    executionContext = new ExecutionContext(system, ['stackframe']);
+  });
+
   test('should execute simple code in sandbox', async () => {
-    const system = createTestSystemContext();
-    const tree = system.tree;
     tree.set(['config', 'timeout'], 5000);
     tree.set(['user', 'name'], 'John');
 
     const result = await runInSandbox(
       system,
+      executionContext,
       [],
       `
       const timeout = $$\`config/timeout\`;
@@ -25,13 +37,12 @@ describe('Sandbox', () => {
   });
 
   test('should execute async code in sandbox', async () => {
-    const system = createTestSystemContext();
-    const tree = system.tree;
     tree.set(['config', 'timeout'], 5000);
     tree.set(['user', 'name'], 'John');
 
     const result = await runInSandbox(
       system,
+      executionContext,
       [],
       `
       async function fetchData() {
@@ -109,12 +120,11 @@ describe('Sandbox', () => {
 
   describe('Side Effects', () => {
     test('should handle set operation', async () => {
-      const system = createTestSystemContext();
-      const tree = system.tree;
       tree.set(['config', 'timeout'], 5000);
 
       const result = await runInSandbox(
         system,
+        executionContext,
         [],
         `
         $$set('config/timeout', 10000);
@@ -128,12 +138,11 @@ describe('Sandbox', () => {
     });
 
     test('should handle push operation', async () => {
-      const system = createTestSystemContext();
-      const tree = system.tree;
       tree.patchList(['items']);
 
       const result = await runInSandbox(
         system,
+        executionContext,
         [],
         `
         $$push('items', { id: 1, name: 'item1' });
@@ -147,12 +156,11 @@ describe('Sandbox', () => {
     });
 
     test('should handle delete operation', async () => {
-      const system = createTestSystemContext();
-      const tree = system.tree;
       tree.set(['config', 'timeout'], 5000);
 
       const promise = runInSandbox(
         system,
+        executionContext,
         [],
         `
         $$delete('config/timeout');
@@ -166,12 +174,11 @@ describe('Sandbox', () => {
     });
 
     test('should handle get operation', async () => {
-      const system = createTestSystemContext();
-      const tree = system.tree;
       tree.set(['config', 'timeout'], 5000);
 
       const result = await runInSandbox(
         system,
+        executionContext,
         [],
         `
         const timeout = $$get('config/timeout');
@@ -186,11 +193,11 @@ describe('Sandbox', () => {
 
   describe('Root Operations', () => {
     test('should handle root set operation', async () => {
-      const system = createTestSystemContext();
-      const tree = system.tree;
+      tree.set(['config', 'timeout'], 5000);
 
       await runInSandbox(
         system,
+        executionContext,
         [],
         `
         $root.set('config/timeout', 5000);
@@ -202,12 +209,11 @@ describe('Sandbox', () => {
     });
 
     test('should handle root get operation', async () => {
-      const system = createTestSystemContext();
-      const tree = system.tree;
       tree.set(['config', 'timeout'], 5000);
 
       const result = await runInSandbox(
         system,
+        executionContext,
         [],
         `
         return $root.get('config/timeout');
@@ -219,11 +225,11 @@ describe('Sandbox', () => {
     });
 
     test('should handle root push operation', async () => {
-      const system = createTestSystemContext();
-      const tree = system.tree;
+      tree.patchList(['items']);
 
       await runInSandbox(
         system,
+        executionContext,
         [],
         `
         $root.push('items', { id: 1, name: 'item1' });
@@ -237,12 +243,11 @@ describe('Sandbox', () => {
     });
 
     test('should handle root delete operation', async () => {
-      const system = createTestSystemContext();
-      const tree = system.tree;
       tree.set(['config', 'timeout'], 5000);
 
       await runInSandbox(
         system,
+        executionContext,
         [],
         `
         $root.delete('config/timeout');
@@ -253,6 +258,7 @@ describe('Sandbox', () => {
       expect(
         runInSandbox(
           system,
+          executionContext,
           [],
           `
           return $root.get('config/timeout');
@@ -263,13 +269,12 @@ describe('Sandbox', () => {
     });
 
     test('should handle root getNodes operation', async () => {
-      const system = createTestSystemContext();
-      const tree = system.tree;
       tree.set(['config', 'timeout'], 5000);
       tree.set(['config', 'retries'], 3);
 
       const result = await runInSandbox(
         system,
+        executionContext,
         [],
         `
         return $root.getNodes('config');
@@ -285,9 +290,6 @@ describe('Sandbox', () => {
   });
 
   test('should handle LLM calls through root.llm', async () => {
-    const system = createTestSystemContext('{ "result": "olleh" }');
-    const tree = system.tree;
-
     // Set up an LLM template in the tree
     tree.patchNode(['llm_templates', 'reverse_string'], {
       llm: 'Reverse the string: hello',
@@ -299,6 +301,7 @@ describe('Sandbox', () => {
 
     const result = await runInSandbox(
       system,
+      executionContext,
       [],
       `
       return await $root.llm('llm_templates/reverse_string', 'hello');
@@ -310,9 +313,6 @@ describe('Sandbox', () => {
   });
 
   test('should handle LLM calls through llm', async () => {
-    const system = createTestSystemContext('{ "result": "olleh" }');
-    const tree = system.tree;
-
     tree.createModule(['module']);
 
     // Set up an LLM template in the tree
@@ -326,6 +326,7 @@ describe('Sandbox', () => {
 
     const result = await runInSandbox(
       system,
+      executionContext,
       ['module'],
       `
       return await $$llm('llm_templates/reverse_string', 'hello');

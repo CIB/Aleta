@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { CacheDriver, TemporaryCacheDriver } from '../llm/cache';
+import { CacheDriver, FileCacheDriver, TemporaryCacheDriver } from '../llm/cache';
 import { LLMBackend, LLMOptions } from '../llm/llm-backend';
 import { OpenAIBackend } from '../llm/openai-backend';
 import { Tree } from '../tree/tree';
@@ -14,7 +14,7 @@ export interface LLMOptionsWithBackend extends LLMOptions {
 export class SystemContext {
   tree: Tree;
   backends: Dictionary<LLMBackend> = {};
-  cache: CacheDriver = new TemporaryCacheDriver();
+  cache: CacheDriver = new FileCacheDriver();
 
   constructor(defaultBackend?: LLMBackend) {
     this.tree = new Tree();

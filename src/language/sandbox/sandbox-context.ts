@@ -1,10 +1,11 @@
 import { Dictionary } from 'lodash';
 import { Tree } from '../../tree/tree';
 import { extractNodeAsObject, findModule } from '../../tree/tree-helpers';
-import { getFunctionAtPath, TreeFunction } from '../function';
+import { getFunctionAtPath, runFunction, TreeFunction } from '../function';
 import { schemaToTypeScript } from '../type-checker';
 import { SystemContext } from '../../system/system-context';
 import { LLMCall, runLLMCall } from '../llm-call';
+import { ExecutionContext } from '../execution-context';
 
 export interface SandboxContext {
   typescriptCode: string;
@@ -13,6 +14,7 @@ export interface SandboxContext {
 
 export async function buildSandboxContext(
   system: SystemContext,
+  executionContext: ExecutionContext,
   functionPath: string[],
   input: any,
 ): Promise<SandboxContext> {
@@ -24,8 +26,8 @@ export async function buildSandboxContext(
 
   await addInputToContext(context, getFunctionAtPath(tree, functionPath), input);
   await addModuleToContext(context, tree, functionPath);
-  await addModuleTreeManipulationToContext(system, context, tree, functionPath);
-  await addTreeManipulationToContext(system, context, tree, functionPath);
+  await addModuleTreeManipulationToContext(system, context, executionContext, tree, functionPath);
+  await addTreeManipulationToContext(system, context, executionContext, tree, functionPath);
   return context;
 }
 
@@ -57,6 +59,7 @@ export async function addModuleToContext(context: SandboxContext, tree: Tree, fu
 export async function addModuleTreeManipulationToContext(
   system: SystemContext,
   context: SandboxContext,
+  executionContext: ExecutionContext,
   tree: Tree,
   functionPath: string[],
 ) {
@@ -93,6 +96,15 @@ export async function addModuleTreeManipulationToContext(
     return runLLMCall(system, llmConfig, input);
   };
 
+  context.c.$$call = function (accessPath: string): any {
+    const splitPath = accessPath.split('/');
+    const fullPath = [...module, ...splitPath];
+    return function (input: any) {
+      const frame = executionContext.pushFrame(fullPath.join('/'), input);
+      return runFunction(frame, fullPath, input);
+    };
+  };
+
   context.typescriptCode += `
     declare const $$push: (path: string, value: object) => void;
     declare const $$set: (path: string, value: object) => void;
@@ -100,12 +112,14 @@ export async function addModuleTreeManipulationToContext(
     declare const $$delete: (path: string) => void;
     declare const $$getNodes: (path: string) => any;
     declare const $$llm: (path: string, input: any) => Promise<any>;
+    declare const $$call: (path: string) => (input: any) => Promise<any>;
   `.trim();
 }
 
 export async function addTreeManipulationToContext(
   system: SystemContext,
   context: SandboxContext,
+  executionContext: ExecutionContext,
   tree: Tree,
   functionPath: string[],
 ) {
@@ -136,6 +150,13 @@ export async function addTreeManipulationToContext(
       const llmConfig = extractNodeAsObject<LLMCall>(tree, fullPath);
       return runLLMCall(system, llmConfig, input);
     },
+    call: (path: string) => {
+      const fullPath = path.split('/');
+      return function (input: any) {
+        const frame = executionContext.pushFrame(fullPath.join('/'), input);
+        return runFunction(frame, fullPath, input);
+      };
+    },
   };
 
   context.typescriptCode += `
@@ -146,6 +167,7 @@ export async function addTreeManipulationToContext(
       delete: (path: string) => void;
       getNodes: (path: string) => any;
       llm: (path: string, input: any) => Promise<any>;
+      call: (path: string) => (input: any) => Promise<any>;
     };
   `.trim();
 }
