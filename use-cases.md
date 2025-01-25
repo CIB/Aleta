@@ -149,6 +149,53 @@ For example, we can create sub-nodes in the tree for the story for each characte
 
 When writing out the reaction of a specific character, we should strip out information in the prompt that the character would not know about. For example, internal monologue of the player, events that happened earlier where that character wasn't present, etc.
 
+### Context Resolution in Roleplay
+
+When generating roleplay responses, the system follows a structured context resolution process:
+
+1. Fetch primary objects:
+
+   - Identify key entities mentioned in the prompt
+   - Retrieve their direct properties from the tree
+
+2. Resolve referenced objects:
+
+   - For each reference found in primary objects (e.g., weapons, locations)
+   - Fetch the referenced object's details
+   - Recursively resolve any nested references
+
+3. Build context hierarchy:
+   - Organize objects into a nested structure
+   - Maintain reference chains for consistency
+
+Example resolution process:
+
+```yaml
+# Step 1: Fetch primary object
+core/world/characters/arthur:
+  type: HeroKing
+  weapon: core/world/artifacts/excalibur # Reference
+  traits:
+    - 'Wielder of promised victory'
+
+# Step 2: Resolve references
+core/world/artifacts/excalibur:
+  type: LegendarySword
+  properties:
+    - name: Excalibur
+    - power: Victory Assurance
+    - origin: core/world/locations/avalon # Nested reference
+
+# Step 3: Resolve nested references
+core/world/locations/avalon:
+  type: MythicalIsland
+  properties:
+    - ruler: Morgan le Fay
+    - magic_level: 10
+```
+
+The system then uses this resolved context to generate responses, ensuring all referenced details are available during generation. This approach prevents the need for multiple refinement passes and maintains consistency across the narrative.
+
 ## Merge request deep dive
 
 Below is a prompt I gave to another AI agent system while experimenting. This prompt represents a good use case for aleta. A prompt like this should be translated to an execution plan, potentially with pseudo-code to describe the control flow and steps.
