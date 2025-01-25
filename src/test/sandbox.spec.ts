@@ -12,7 +12,7 @@ describe('Sandbox', () => {
   let executionContext: ExecutionContext;
 
   beforeEach(() => {
-    system = createTestSystemContext('{"result": "olleh"}');
+    system = createTestSystemContext();
     tree = system.tree;
     executionContext = new ExecutionContext(system, ['stackframe']);
   });

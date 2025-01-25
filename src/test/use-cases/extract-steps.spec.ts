@@ -7,21 +7,14 @@ import { Schema } from 'ajv';
 import { test } from 'bun:test';
 import { runFunction } from '../../language/function';
 import { createTestSystemContext } from '../../system/test-system-context';
-import fs from 'fs';
 
-// const responseLines = fs.readFileSync('./src/test/responses.txt', 'utf8');
-// const response = responseLines.split('\n')[0];
-const response = '{}';
-
-// Skip this for now, we need to think of a better way to test complex logic
-// interspersed with different LLM calls.
-describe.skip('ExecutionContext', () => {
+describe('ExecutionContext', () => {
   let tree: Tree;
   let system: SystemContext;
   let context: ExecutionContext;
 
   beforeEach(() => {
-    system = createTestSystemContext(response);
+    system = createTestSystemContext();
     tree = system.tree;
     context = new ExecutionContext(system, ['stackframe']);
 

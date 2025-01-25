@@ -1,3 +1,4 @@
+import assert from 'assert';
 import { CacheDriver } from './cache';
 import { LLMApiError, LLMBackend } from './llm-backend';
 import axios from 'axios';
@@ -32,6 +33,8 @@ export class OpenAIBackend extends LLMBackend {
   ): Promise<string> {
     const model = options.model || 'deepseek/deepseek-chat';
     const verbose = options.verbose !== undefined ? options.verbose : true;
+
+    assert(this.apiKey, 'API key is required');
 
     if (verbose) {
       console.log(colors.cyan('Requesting'), colors.green(question));

@@ -19,7 +19,7 @@ export abstract class CacheDriver {
 }
 
 export class FileCacheDriver extends CacheDriver {
-  private CACHE_FILE = path.join(process.cwd(), 'gpt-cache.json');
+  protected CACHE_FILE = path.join(process.cwd(), 'gpt-cache.json');
   private cache: Record<string, { question: string; answer: string; options: LLMOptions }> = {};
 
   readCacheFile() {
@@ -46,6 +46,13 @@ export class FileCacheDriver extends CacheDriver {
     const cacheKey = this.getCacheKey(question, options);
     this.cache[cacheKey] = { question, options, answer };
     this.writeCacheFile();
+  }
+}
+
+export class TestCacheDriver extends FileCacheDriver {
+  constructor() {
+    super();
+    this.CACHE_FILE = path.join(path.dirname(__filename), '../test/llm-cache.json');
   }
 }
 

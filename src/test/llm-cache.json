@@ -1,0 +1,34 @@
+{
+  "a72950bca60db991f6a5bd4a76512a7df8226930c4dcbd51e5422ba6d63c4ac5": {
+    "question": "\n            You are a helpful assistant that extracts steps from a task.\n            You will be given a prompt and a response.\n            The result should be true if the response contains a list of alternatives that should be tried out independently, false if it contains a series of linear steps that should be executed one after the other.\n        \n\nThe input is: {\"prompt\":\"Is it possible to set up ssh accounts for other users on an M2 mac studio?\",\"response\":\"Yes, you can set up SSH accounts for other users on an M1 Mac Studio. Here's how:\\n\\n1. Open the Terminal app: You can find this in the Applications/Utilities folder or use Spotlight to search for it.\\n2. Create a new user account using the `sudo` command: `sudo /usr/sbin/useradd -s /usr/bin/false newuser`\\n3. Set a password for the new user: `sudo passwd newuser`\\n4. Verify that the new user is present with the `ls /Users` command\\n5. Switch to the new user with `su - newuser`\\n6. Configure SSH by creating a new configuration file at `/etc/ssh/sshd_config.d/newuser.conf` with the contents:\\n```\\nMatch User newuser\\n    ForceCommand internal-ls\\n```\\nThis sets up the new user to run the `internal-ls` command when they log in via SSH.\\n\\n7. Restart the SSH service: `sudo killall sshd`\\n\\nNow you should be able to connect to your Mac Studio using SSH as the `newuser` account.\\n\\nNote: You may need to restart your Mac or reboot the SSH service for changes to take effect. If you're having trouble, try restarting the SSH service or running `sudo killall sshd` from the Terminal app. Good luck! 😊\\n\"}\n\nAdditional constraints for the output:\n\n- Please provide the output in a JSON format matching the following JSON schema: {\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"boolean\"}},\"required\":[\"result\"]}",
+    "options": {
+      "json": true,
+      "backend": "default"
+    },
+    "answer": "{\"result\": false}"
+  },
+  "ff899e7d2a2e994736df0d0f95b57a11a9fb6c0d95e901f5050ed7ba1b00fe3c": {
+    "question": "\n            You are a helpful assistant that extracts steps from a task.\n            You will be given a prompt and a response containing a list of steps.\n            Please respond with the list of steps, where each item contains the full text of that step. You can use the \n character to represent multi-line items. Ensure to keep the steps in the same order as in the input.\n        \n\nThe input is: {\"prompt\":\"Is it possible to set up ssh accounts for other users on an M2 mac studio?\",\"response\":\"Yes, you can set up SSH accounts for other users on an M1 Mac Studio. Here's how:\\n\\n1. Open the Terminal app: You can find this in the Applications/Utilities folder or use Spotlight to search for it.\\n2. Create a new user account using the `sudo` command: `sudo /usr/sbin/useradd -s /usr/bin/false newuser`\\n3. Set a password for the new user: `sudo passwd newuser`\\n4. Verify that the new user is present with the `ls /Users` command\\n5. Switch to the new user with `su - newuser`\\n6. Configure SSH by creating a new configuration file at `/etc/ssh/sshd_config.d/newuser.conf` with the contents:\\n```\\nMatch User newuser\\n    ForceCommand internal-ls\\n```\\nThis sets up the new user to run the `internal-ls` command when they log in via SSH.\\n\\n7. Restart the SSH service: `sudo killall sshd`\\n\\nNow you should be able to connect to your Mac Studio using SSH as the `newuser` account.\\n\\nNote: You may need to restart your Mac or reboot the SSH service for changes to take effect. If you're having trouble, try restarting the SSH service or running `sudo killall sshd` from the Terminal app. Good luck! 😊\\n\"}\n\nAdditional constraints for the output:\n\n- Please provide the output in a JSON format matching the following JSON schema: {\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}},\"required\":[\"result\"]}",
+    "options": {
+      "json": true,
+      "backend": "default"
+    },
+    "answer": "{\n    \"result\": [\n        \"Open the Terminal app: You can find this in the Applications/Utilities folder or use Spotlight to search for it.\",\n        \"Create a new user account using the sudo command: sudo /usr/sbin/useradd -s /usr/bin/false newuser\",\n        \"Set a password for the new user: sudo passwd newuser\",\n        \"Verify that the new user is present with the ls /Users command\",\n        \"Switch to the new user with su - newuser\",\n        \"Configure SSH by creating a new configuration file at /etc/ssh/sshd_config.d/newuser.conf with the contents:\\nMatch User newuser\\n    ForceCommand internal-ls\\nThis sets up the new user to run the internal-ls command when they log in via SSH.\",\n        \"Restart the SSH service: sudo killall sshd\"\n    ]\n}"
+  },
+  "b5e17170a99e80aed231c26b2e0d487dc572bf75cf7e90d61f51a989a832236d": {
+    "question": "Reverse the string: hello\n\nThe input is: \"hello\"\n\nAdditional constraints for the output:\n\n- Please provide the output in a JSON format matching the following JSON schema: {\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"string\"}},\"required\":[\"result\"]}",
+    "options": {
+      "json": true,
+      "backend": "default"
+    },
+    "answer": "{\"result\": \"olleh\"}"
+  },
+  "b147883d017195ad8eabc356344149b1fdd7f8d1af157bbdf07f3a7bc6854523": {
+    "question": "Reverse the string.\n\nThe input is: \"hello\"\n\nAdditional constraints for the output:\n\n- Please provide the output in a JSON format matching the following JSON schema: {\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"string\"}},\"required\":[\"result\"]}",
+    "options": {
+      "json": true,
+      "backend": "default"
+    },
+    "answer": "{\n  \"result\": \"olleh\"\n}"
+  }
+}
