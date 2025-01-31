@@ -4,7 +4,7 @@ import { LLMBackend, LLMOptions } from '../llm/llm-backend';
 import { OpenAIBackend } from '../llm/openai-backend';
 import { Tree } from '../tree/tree';
 import type { Dictionary } from 'lodash';
-import { DummyBackend } from '../llm/dummy-backend';
+import { loadStdlib } from './stdlib';
 
 export interface LLMOptionsWithBackend extends LLMOptions {
   backend?: string;
@@ -30,6 +30,8 @@ export class SystemContext {
         ['gpt-4o-mini', 'gpt-4o', 'deepseek/deepseek-chat'],
       );
     }
+
+    loadStdlib(this);
   }
 
   async prompt(question: string, options: LLMOptionsWithBackend = {}) {

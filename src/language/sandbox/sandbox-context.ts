@@ -6,6 +6,7 @@ import { schemaToTypeScript } from '../type-checker';
 import { SystemContext } from '../../system/system-context';
 import { LLMCall, runLLMCall } from '../llm-call';
 import { ExecutionContext } from '../execution-context';
+import { createCallFunction } from './call-stack';
 
 export interface SandboxContext {
   typescriptCode: string;
@@ -90,20 +91,18 @@ export async function addModuleTreeManipulationToContext(
     return extractNodeAsObject(tree, fullPath);
   };
 
+  context.c.$$patchNode = (path: string, value: object) => {
+    const fullPath = [...module, ...path.split('/')];
+    tree.patchNode(fullPath, value);
+  };
+
   context.c.$$llm = (path: string, input: any) => {
     const fullPath = [...module, ...path.split('/')];
     const llmConfig = extractNodeAsObject<LLMCall>(tree, fullPath);
     return runLLMCall(system, llmConfig, input);
   };
 
-  context.c.$$call = function (accessPath: string): any {
-    const splitPath = accessPath.split('/');
-    const fullPath = [...module, ...splitPath];
-    return function (input: any) {
-      const frame = executionContext.pushFrame(fullPath.join('/'), input);
-      return runFunction(frame, fullPath, input);
-    };
-  };
+  context.c.$$call = createCallFunction(executionContext, module);
 
   context.typescriptCode += `
     declare const $$push: (path: string, value: object) => void;
@@ -111,6 +110,7 @@ export async function addModuleTreeManipulationToContext(
     declare const $$get: (path: string) => any;
     declare const $$delete: (path: string) => void;
     declare const $$getNodes: (path: string) => any;
+    declare const $$patchNode: (path: string, value: object) => void;
     declare const $$llm: (path: string, input: any) => Promise<any>;
     declare const $$call: (path: string) => (input: any) => Promise<any>;
   `.trim();
@@ -144,19 +144,17 @@ export async function addTreeManipulationToContext(
       const fullPath = path.split('/');
       return extractNodeAsObject(tree, fullPath);
     },
+    patchNode: (path: string, value: object) => {
+      const fullPath = path.split('/');
+      tree.patchNode(fullPath, value);
+    },
     llm: (path: string, input: any) => {
       const fullPath = path.split('/');
       // TODO: Validate that the path is a valid LLM call
       const llmConfig = extractNodeAsObject<LLMCall>(tree, fullPath);
       return runLLMCall(system, llmConfig, input);
     },
-    call: (path: string) => {
-      const fullPath = path.split('/');
-      return function (input: any) {
-        const frame = executionContext.pushFrame(fullPath.join('/'), input);
-        return runFunction(frame, fullPath, input);
-      };
-    },
+    call: createCallFunction(executionContext, []),
   };
 
   context.typescriptCode += `
@@ -166,6 +164,7 @@ export async function addTreeManipulationToContext(
       get: (path: string) => any;
       delete: (path: string) => void;
       getNodes: (path: string) => any;
+      patchNode: (path: string, value: object) => void;
       llm: (path: string, input: any) => Promise<any>;
       call: (path: string) => (input: any) => Promise<any>;
     };

@@ -23,6 +23,10 @@ export function getFunctionAtPath(tree: Tree, functionPath: string[]): TreeFunct
   return functionConfig;
 }
 
+export function writeFunction(tree: Tree, functionPath: string[], func: TreeFunction) {
+  return tree.patchNode(functionPath, func);
+}
+
 export async function runFunction(
   executionContext: ExecutionContext,
   functionPath: string[],
@@ -30,7 +34,15 @@ export async function runFunction(
 ): Promise<any> {
   const functionConfig = getFunctionAtPath(executionContext.system.tree, functionPath);
   // Validate input type
-  assertType(input, functionConfig.input);
+  try {
+    assertType(input, functionConfig.input);
+  } catch (e) {
+    let message = `Input type mismatch:\n`;
+    message += `\nFunction: ${functionPath.join('/')}\n`;
+    message += `\nInput: ${JSON.stringify(input)}\n`;
+    message += `\nExpected type: ${JSON.stringify(functionConfig.input)}\n`;
+    throw new Error(message);
+  }
 
   const result = await runInSandbox(
     executionContext.system,

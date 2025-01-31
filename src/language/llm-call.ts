@@ -44,7 +44,7 @@ export async function runLLMCall(
 
   // Add examples if they exist
   if (config.examples && config.examples.length > 0) {
-    prompt =
+    prompt +=
       `Here are some input/output examples of the expected result:\n\n` +
       JSON.stringify(config.examples) +
       `\n\nNow handle this input similarly:\n`;
