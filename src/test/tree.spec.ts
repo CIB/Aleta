@@ -5,6 +5,67 @@ import { extractNodeAsObject } from '../tree/tree-helpers';
 describe('Tree Operations', () => {
   let tree: Tree;
 
+  describe('ensurePath', () => {
+    beforeEach(() => {
+      tree = new Tree();
+    });
+
+    test('should return root for empty path', () => {
+      const result = tree.ensurePath([]);
+      expect(result).toBe(tree.root);
+    });
+
+    test('should create and return single level node', () => {
+      const result = tree.ensurePath(['test'], { skipLast: false });
+      expect(result.name).toBe('test');
+      expect(result.type).toBe('tree');
+      expect(tree.root.children['test']).toBe(result);
+    });
+
+    test('should create nested structure and return leaf node', () => {
+      const result = tree.ensurePath(['level1', 'level2', 'level3'], { skipLast: false });
+
+      // Verify the full structure
+      const level1 = tree.root.children['level1'];
+      expect(level1).toBeDefined();
+      expect(level1.name).toBe('level1');
+
+      const level2 = (level1 as TreeNode).children['level2'];
+      expect(level2).toBeDefined();
+      expect(level2.name).toBe('level2');
+
+      expect((level2 as TreeNode).children['level3']).toBe(result);
+      expect(result.name).toBe('level3');
+    });
+
+    test('should return existing node without modification', () => {
+      // Create initial structurefalse
+      const existingNode = tree.patchNode(['existing', 'node']);
+      console.log(JSON.stringify(tree.root, null, 2));
+
+      // Get existing node
+      const result = tree.ensurePath(['existing', 'node'], { skipLast: false });
+
+      // Verify it's the same node
+      expect(result).toBe(existingNode);
+    });
+
+    test('should handle numeric path segments as list indices', () => {
+      const result = tree.ensurePath(['items', '1'], { skipLast: false });
+      expect(tree.root.children['items'].type).toBe('list');
+      expect((tree.root.children['items'] as ListNode).children[0]).toBe(result);
+    });
+
+    test('should throw when mixing list and tree nodes', () => {
+      // Create list structure
+      tree.ensurePath(['items', '0']);
+
+      expect(() => tree.ensurePath(['items', 'key'])).toThrow(
+        'Path items/key: Expected tree node at items because next segment is not numeric',
+      );
+    });
+  });
+
   describe('Basic Operations', () => {
     beforeEach(() => {
       tree = new Tree();

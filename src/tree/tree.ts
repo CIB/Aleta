@@ -5,6 +5,9 @@
 import { isInteger } from 'lodash';
 import { Schema } from '../language/type-checker';
 import { validateType } from '../types';
+import { createLogger } from '@/utils/log';
+
+const logger = createLogger('CORE');
 
 export function path(path: string): string[] {
   return path.split('/');
@@ -54,6 +57,27 @@ export interface ListNode extends BaseNode {
 
 export type NodeUnion = DataNode | TreeNode | ListNode;
 
+export type UpdateNodeOperation = {
+  type: 'update-node';
+  path: string;
+  add: Record<string, any>;
+  remove: string[];
+};
+
+export type CreateNodeOperation = {
+  type: 'create-node';
+  nodeType: 'tree' | 'list';
+  path: string;
+};
+
+export type DeleteNodeOperation = {
+  type: 'delete-node';
+  path: string;
+};
+
+export type TreeOperationItem = UpdateNodeOperation | CreateNodeOperation | DeleteNodeOperation;
+export type TreeOperation = TreeOperationItem[];
+
 /**
  * Core tree data structure for the reasoning system.
  *
@@ -66,8 +90,57 @@ export type NodeUnion = DataNode | TreeNode | ListNode;
  * Numeric path segments indicate list indices.
  */
 export class Tree {
-  private root: TreeNode;
-  private operationLog: { type: string; path: string[]; value?: any }[] = [];
+  public root: TreeNode;
+  public operationLog: TreeOperation[];
+
+  public applyUpdateNodeOperation(operation: UpdateNodeOperation): void {
+    const { path: modPath, add, remove } = operation;
+    const node = this.getNode(path(modPath));
+    if (!node) {
+      throw new Error(`Node not found: ${modPath}`);
+    }
+    if (node.type !== 'tree') {
+      throw new Error(`Expected tree node at ${modPath}`);
+    }
+    for (const key of remove) {
+      delete node.children[key];
+    }
+    for (const [key, value] of Object.entries(add)) {
+      node.children[key] = value;
+    }
+  }
+
+  public applyCreateNodeOperation(operation: CreateNodeOperation): void {
+    const { path: modPath, nodeType } = operation;
+
+    if (nodeType === 'tree') {
+      const parent = this.ensurePath(path(modPath), { skipLast: true });
+      const lastSegment = path(modPath)[path(modPath).length - 1];
+      const index = this.segmentToIndex(lastSegment);
+      if (index === null) {
+        parent.children[lastSegment] = {
+          type: 'tree',
+          name: lastSegment,
+          children: {},
+          isModule: false,
+        };
+      } else {
+        parent.children[index] = {
+          type: 'tree',
+          name: lastSegment,
+          children: {},
+          isModule: false,
+        };
+      }
+    } else if (nodeType === 'list') {
+      this.patchList(path(modPath));
+    }
+  }
+
+  public applyDeleteNodeOperation(operation: DeleteNodeOperation): void {
+    const { path: modPath } = operation;
+    this.delete(path(modPath));
+  }
 
   /**
    * Creates a new Tree instance with an empty root node
@@ -278,6 +351,7 @@ export class Tree {
    * - Creates a TreeNode if the next segment is not numeric
    *
    * @param path - The full path to ensure exists
+   * @param skipLast - If this is true, we will skip the last segment, and only use it for type verification
    * @returns The parent node of the last path segment
    * @throws PathError if:
    *   - A list node is expected but a tree node exists
@@ -291,7 +365,8 @@ export class Tree {
    * // - '0' as ListNode (next segment is not numeric)
    * // Returns the parent node of 'profile'
    */
-  private ensurePath(path: string[]): TreeNode {
+  public ensurePath(path: string[], options: { skipLast: boolean } = { skipLast: true }): TreeNode {
+    const { skipLast } = options;
     if (path.length === 0) {
       return this.root;
     }
@@ -299,12 +374,13 @@ export class Tree {
     this.validatePath(path);
 
     let current: TreeNode = this.root;
-    // Handle all segments except the last one
-    for (const segment of path.slice(0, -1)) {
+    // Handle all segments, excluding the last one
+    for (const [i, segment] of path.entries()) {
+      if (i === path.length - 1 && skipLast) continue;
       this.validatePathSegment(segment);
 
-      const nextSegment = path[path.indexOf(segment) + 1];
-      const isNextSegmentNumeric = !isNaN(parseInt(nextSegment));
+      const nextSegment = path[i + 1];
+      const isNextSegmentNumeric = nextSegment !== undefined && !isNaN(parseInt(nextSegment));
 
       let currentSegment: string | number = segment;
       const potentialInt = parseInt(currentSegment);
@@ -363,7 +439,7 @@ export class Tree {
       return this.root;
     }
 
-    const parent = this.ensurePath(path);
+    const parent = this.ensurePath(path, { skipLast: true });
     let lastSegment: number | string = path[path.length - 1];
     const potentialInt = parseInt(lastSegment);
     if (!isNaN(potentialInt)) {
@@ -402,7 +478,7 @@ export class Tree {
       throw new PathError(path, 'Cannot create list at root');
     }
 
-    const parent = this.ensurePath(path);
+    const parent = this.ensurePath(path, { skipLast: true });
     const lastSegment = path[path.length - 1];
 
     if (!parent.children[lastSegment]) {
@@ -433,7 +509,6 @@ export class Tree {
     const list = this.patchList(path);
     const index = list.children.length + 1;
     this.merge([...path, index.toString()], value);
-    this.operationLog.push({ type: 'push', path, value });
     return [...path, list.children.length.toString()];
   }
 
@@ -459,7 +534,6 @@ export class Tree {
       valueType: 'any',
       value,
     };
-    this.operationLog.push({ type: 'set', path, value });
   }
 
   /**
@@ -520,7 +594,6 @@ export class Tree {
     } else {
       throw new MergeError(path, `Invalid merge value: ${value}`);
     }
-    this.operationLog.push({ type: 'merge', path, value });
   }
 
   /**
@@ -542,6 +615,5 @@ export class Tree {
     }
 
     delete parent.children[name];
-    this.operationLog.push({ type: 'delete', path });
   }
 }

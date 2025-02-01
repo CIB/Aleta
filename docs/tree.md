@@ -74,3 +74,7 @@ Deletes the node, list or attribute at the given path. If the item does not exis
 ### Tree Versioning
 
 We store each mutation operation to the tree (create, update, merge, etc.) in a log in chronological order. Later, the log can be used to restore a previous version of the tree.
+
+### Tree Serialization
+
+In order to serialize the tree, we simply store a full list of all tree operations in chronological order in JSON format and write it to disk. In future, we may also use a database to store this list. Additionally, it may make sense to keep "checkpoints" of the tree at different points in time, to speed up restoring an older version of the tree by starting from the last checkpoint, rather than the empty state.
