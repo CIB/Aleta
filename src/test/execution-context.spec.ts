@@ -1,6 +1,6 @@
 import { expect, test, describe, beforeEach } from 'bun:test';
 import { ExecutionContext, getFrameAtPath } from '../language/execution-context';
-import { PathError, Tree } from '../tree/tree';
+import { PathSegmentError, Tree } from '../tree/tree';
 import { createTestSystemContext } from '../system/test-system-context';
 
 describe('ExecutionContext', () => {
@@ -72,6 +72,6 @@ describe('ExecutionContext', () => {
   });
 
   test('getFrameAtPath should throw for invalid path', () => {
-    expect(() => getFrameAtPath(tree, ['invalid'])).toThrow(PathError);
+    expect(() => getFrameAtPath(tree, ['invalid'])).toThrow(PathSegmentError);
   });
 });

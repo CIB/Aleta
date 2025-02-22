@@ -150,8 +150,15 @@ export async function addTreeManipulationToContext(
     },
     llm: (path: string, input: any) => {
       const fullPath = path.split('/');
-      // TODO: Validate that the path is a valid LLM call
+      console.log('Full path:', fullPath);
+
+      // Use getNodeOrList instead of get to handle both tree and list nodes
+      const node = tree.getNodeOrList(fullPath);
+      console.log('Node from tree:', node);
+
       const llmConfig = extractNodeAsObject<LLMCall>(tree, fullPath);
+      console.log('Extracted LLM config:', llmConfig);
+
       return runLLMCall(system, llmConfig, input);
     },
     call: createCallFunction(executionContext, []),

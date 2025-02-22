@@ -28,7 +28,7 @@ export async function runLLMCall(
   config: LLMCall,
   input: any,
   options: LLMOptionsWithBackend = {},
-): Promise<string[]> {
+): Promise<any> {
   // Build the complete prompt
   let prompt = config.llm;
   prompt += `\n\n`;

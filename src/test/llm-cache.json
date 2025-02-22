@@ -54,5 +54,37 @@
       "backend": "default"
     },
     "answer": "{\n  \"result\": \"\\nconst websites = $do('Get list of websites', 'string[]', { searchTerm: input.searchTerm });\\nconst markdowns = websites.map(website => $do('Convert website to markdown', 'string', { website }));\\nconst combinedResult = $do('Combine results', 'string', { markdowns });\"\n}"
+  },
+  "f4874f37282b8fedea600adb19c008e2d25c69baf4ec960bbf4163ad684425ce": {
+    "question": "Reverse the string\n\nThe input is: \"hello\"\n\nAdditional constraints for the output:\n\n- Please provide the output in a JSON format matching the following JSON schema: {\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"string\"}},\"required\":[\"result\"]}",
+    "options": {
+      "json": true,
+      "backend": "default"
+    },
+    "answer": "{\"result\": \"olleh\"}"
+  },
+  "dfe766c5e75e57c48fdd0fa520409ab5709829ac07bbb09d4d32369fb1a4cbb8": {
+    "question": "Format the user information\n\nThe input is: {\"firstName\":\"John\",\"lastName\":\"Doe\",\"age\":25}\n\nAdditional constraints for the output:\n\n- Please provide the output in a JSON format matching the following JSON schema: {\"type\":\"object\",\"properties\":{\"fullName\":{\"type\":\"string\"},\"isAdult\":{\"type\":\"boolean\"}},\"required\":[\"fullName\",\"isAdult\"]}",
+    "options": {
+      "json": true,
+      "backend": "default"
+    },
+    "answer": "{\"fullName\":\"John Doe\",\"isAdult\":true}"
+  },
+  "585092c0a9c4839e3ecd74687a245652fa0023b4e07394b4948e264bfabe6881": {
+    "question": "Convert temperature from Celsius to Fahrenheit\n\nThe input is: 25\n\nHere are some input/output examples of the expected result:\n\n[{\"input\":\"0\",\"output\":\"32\"},{\"input\":\"100\",\"output\":\"212\"}]\n\nNow handle this input similarly:\nAdditional constraints for the output:\n\n- Please provide the output in a JSON format matching the following JSON schema: {\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"number\"}},\"required\":[\"result\"]}",
+    "options": {
+      "json": true,
+      "backend": "default"
+    },
+    "answer": "{\"result\":77}"
+  },
+  "7ce1b32e81ebd64d72890f039dd03790ad64a0d1b88db205a4191b39fa190b83": {
+    "question": "Write a short description of a cat\n\nThe input is: \"cat\"\n\nAdditional constraints for the output:\n\n- The description should be exactly 10 words long\n- Use simple language\n- Please provide the output in a JSON format matching the following JSON schema: {\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"string\"}},\"required\":[\"result\"]}",
+    "options": {
+      "json": true,
+      "backend": "default"
+    },
+    "answer": "{\"result\":\"A cat is a small, furry, playful, and independent animal.\"}"
   }
 }

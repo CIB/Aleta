@@ -29,6 +29,8 @@ describe('ExecutionContext', () => {
 
     // Set up extract steps module
     tree.createModule(p('core/task/processResponse'));
+    const node = tree.getNodeOrList(p('core/task/processResponse'));
+    console.log('Node!!', node);
 
     // Prompt helper to
     tree.patchNode(p('core/task/processResponse/alternativesOrSteps'), {
@@ -115,6 +117,9 @@ describe('ExecutionContext', () => {
         }
       `,
     });
+
+    const node2 = tree.getNodeOrList(p('core/task/processResponse'));
+    console.log('Node2!!', node2);
   });
 
   test(

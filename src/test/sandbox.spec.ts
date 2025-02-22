@@ -1,5 +1,5 @@
 import { expect, test, describe } from 'bun:test';
-import { PathError, Tree } from '../tree/tree';
+import { PathSegmentError, Tree } from '../tree/tree';
 import { runInSandbox, inferReturnType } from '../language/sandbox/sandbox';
 import { createTestSystemContext } from '../system/test-system-context';
 import { SystemContext } from '../system/system-context';
@@ -156,7 +156,7 @@ describe('Sandbox', () => {
     });
 
     test('should handle delete operation', async () => {
-      tree.set(['config', 'timeout'], 5000);
+      tree.set(['config', 'timeout', 'value'], 5000);
 
       const promise = runInSandbox(
         system,
@@ -169,8 +169,8 @@ describe('Sandbox', () => {
         undefined,
       );
 
-      expect(promise).rejects.toThrow(PathError);
-      expect(() => tree.get(['config', 'timeout'])).toThrow(PathError);
+      expect(promise).rejects.toThrow(PathSegmentError);
+      expect(() => tree.get(['config', 'timeout'])).toThrow(PathSegmentError);
     });
 
     test('should handle get operation', async () => {
@@ -265,7 +265,7 @@ describe('Sandbox', () => {
         `,
           undefined,
         ),
-      ).rejects.toThrow(PathError);
+      ).rejects.toThrow(PathSegmentError);
     });
 
     test('should handle root getNodes operation', async () => {

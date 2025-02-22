@@ -207,3 +207,8 @@ It would be good if Aleta could develop its own reasoning mechanisms to understa
 - Break up their gitlab activity into distinct work items
 - Iterate over each work item, and check how much effort may have gone into the solution
 - Create hypotheses and keep questioning them ("how may this have been more work than at first glance?")
+
+## Optimization
+
+1. Use smaller specialist models for specific tasks that can be swapped out quickly
+2. Write "native" code (e.g. using rust) or use optimization tools similar to numpy (if that exists in typescript)
