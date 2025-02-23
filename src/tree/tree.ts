@@ -2,10 +2,11 @@
 // Most things can be represented as nodes in the tree.
 // Nodes can be referenced uniquely by their path.
 
-import { isInteger } from 'lodash';
+import { cloneDeep, flatten, isInteger } from 'lodash';
 import { Schema } from '../language/type-checker';
 import { validateType } from '../types';
 import { createLogger } from '@/utils/log';
+import { diff, applyChangeset, type Changeset } from 'json-diff-ts';
 
 const logger = createLogger('CORE');
 
@@ -114,6 +115,30 @@ export type AnyPathError = PathSegmentError | PathTypeMismatchError | PathNotFou
  */
 export class Tree {
   public root: TreeNode;
+  public lastVersion: TreeNode;
+  public diffLog: Changeset[] = [];
+
+  public setCheckpoint(): void {
+    // Store diff between current state and last version
+    const currentDiff = diff(this.lastVersion, this.root);
+    this.diffLog.push(cloneDeep(currentDiff));
+
+    this.lastVersion = cloneDeep(this.root);
+  }
+
+  public restore(checkpoint: number): Tree {
+    // Validate checkpoint index
+    if (!Number.isInteger(checkpoint) || checkpoint < 0 || checkpoint >= this.diffLog.length) {
+      throw new Error(`Invalid checkpoint index: ${checkpoint}. Must be between 0 and ${this.diffLog.length - 1}`);
+    }
+
+    const newTree = new Tree();
+    // Restore the tree by applying the diffs
+    const changeset = flatten(this.diffLog.slice(0, checkpoint));
+    applyChangeset(newTree.root, changeset);
+    newTree.lastVersion = cloneDeep(newTree.root);
+    return newTree;
+  }
 
   private segmentToIndex(segment: string): number | 'error' | null {
     const index = parseFloat(segment);
@@ -409,6 +434,7 @@ export class Tree {
       isModule: true,
       children: {},
     };
+    this.lastVersion = cloneDeep(this.root);
   }
 
   /**
@@ -478,19 +504,75 @@ export class Tree {
   }
 
   toJSON(): any {
-    return {
-      type: this.root.type,
-      name: this.root.name,
-      isModule: this.root.isModule,
-      children: this.root.children
-        ? Object.fromEntries(Object.entries(this.root.children).map(([key, value]) => [key, JSON.stringify(value)]))
-        : {},
-    };
+    function serializeNode(node: NodeUnion): any {
+      const base = {
+        type: node.type,
+        name: node.name,
+      };
+
+      switch (node.type) {
+        case 'data':
+          return {
+            ...base,
+            valueType: node.valueType,
+            value: node.value,
+          };
+        case 'tree':
+          return {
+            ...base,
+            isModule: node.isModule,
+            children: Object.fromEntries(
+              Object.entries(node.children).map(([key, child]) => [key, serializeNode(child)]),
+            ),
+          };
+        case 'list':
+          return {
+            ...base,
+            valueType: node.valueType,
+            children: node.children.map((child) => serializeNode(child)),
+          };
+        default:
+          throw new Error(`Unknown node type: ${(node as any).type}`);
+      }
+    }
+
+    return serializeNode(this.root);
   }
 
   static fromJSON(json: any): Tree {
+    function deserializeNode(data: any): NodeUnion {
+      switch (data.type) {
+        case 'data':
+          return {
+            type: 'data',
+            name: data.name,
+            valueType: data.valueType,
+            value: data.value,
+          };
+        case 'tree':
+          return {
+            type: 'tree',
+            name: data.name,
+            isModule: data.isModule,
+            children: Object.fromEntries(
+              Object.entries(data.children).map(([key, child]) => [key, deserializeNode(child)]),
+            ),
+          };
+        case 'list':
+          return {
+            type: 'list',
+            name: data.name,
+            valueType: data.valueType,
+            children: (data.children || []).map(deserializeNode),
+          };
+        default:
+          throw new Error(`Unknown node type: ${data.type}`);
+      }
+    }
+
     const tree = new Tree();
-    tree.root = json.root;
+    const root = deserializeNode(json) as TreeNode;
+    tree.root = root;
     return tree;
   }
 
@@ -542,7 +624,7 @@ export class Tree {
     // We assume the parent has been created already as part of the recursive process
     const { parent, index } = this.getParentAndIndex(path, { createParents: options.createParents });
 
-    let valueType = 'any';
+    let valueType: Schema = 'any';
     if (typeof value === 'string') {
       valueType = 'string';
     } else if (typeof value === 'number') {

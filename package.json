@@ -15,6 +15,7 @@
     "colors": "^1.4.0",
     "glob": "^11.0.1",
     "ignore": "^7.0.3",
+    "json-diff-ts": "^4.1.0",
     "json-schema-to-typescript": "^15.0.3",
     "lodash": "^4.17.21",
     "ollama": "^0.5.10",

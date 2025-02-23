@@ -5,6 +5,7 @@
       "@/*": ["./src/*"]
     },
     "target": "ESNext",
+    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true
   }
 }

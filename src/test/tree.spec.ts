@@ -811,3 +811,203 @@ describe('Insertion Methods', () => {
     });
   });
 });
+
+describe('JSON Serialization', () => {
+  let tree: Tree;
+
+  test('should round-trip empty tree', () => {
+    const original = new Tree();
+    const json = original.toJSON();
+    const restored = Tree.fromJSON(json);
+
+    expect(restored.root).toEqual(original.root);
+  });
+
+  test('should serialize and deserialize complex structure', () => {
+    tree = new Tree();
+    tree.createModule(['core']);
+    tree.set(['core', 'version'], '1.0.0');
+    tree.createList(['users']);
+    tree.push(['users'], { name: 'Alice', roles: ['admin'] });
+    tree.push(['users'], { name: 'Bob', roles: ['user'] });
+
+    const json = tree.toJSON();
+    const restored = Tree.fromJSON(json);
+
+    // Verify root structure
+    expect(restored.root.type).toBe('tree');
+    expect(restored.root.isModule).toBe(true);
+
+    // Verify module node
+    const coreNode = restored.getNodeOrList(['core']) as TreeNode;
+    expect(coreNode.isModule).toBe(true);
+    expect(restored.get(['core', 'version'])).toBe('1.0.0');
+
+    // Verify list structure
+    const usersList = restored.getList(['users']);
+    expect(usersList.children.length).toBe(2);
+    expect(extractNodeAsObject(restored, ['users', '1'])).toEqual({ name: 'Alice', roles: ['admin'] });
+    expect(extractNodeAsObject(restored, ['users', '2'])).toEqual({ name: 'Bob', roles: ['user'] });
+  });
+
+  test('should preserve data types in DataNodes', () => {
+    tree = new Tree();
+    const testDate = new Date();
+    const testObject = { key: 'value' };
+    const testArray = [1, 2, 3];
+
+    tree.set(['dates', 'created'], testDate);
+    tree.set(['objects', 'test'], testObject);
+    tree.set(['arrays', 'numbers'], testArray);
+
+    const restored = Tree.fromJSON(tree.toJSON());
+
+    expect(restored.get(['dates', 'created'])).toEqual(testDate);
+    expect(restored.get(['objects', 'test'])).toEqual(testObject);
+    expect(restored.get(['arrays', 'numbers'])).toEqual(testArray);
+  });
+
+  test('should handle nested tree structures', () => {
+    tree = new Tree();
+    tree.createNode(['a', 'b', 'c']);
+    tree.set(['a', 'b', 'c', 'value'], 42);
+    tree.createList(['a', 'list']);
+    tree.push(['a', 'list'], 'item1');
+
+    const restored = Tree.fromJSON(tree.toJSON());
+
+    expect(restored.getNode(['a', 'b', 'c']).type).toBe('tree');
+    expect(restored.get(['a', 'b', 'c', 'value'])).toBe(42);
+    expect(restored.getList(['a', 'list']).children.length).toBe(1);
+  });
+
+  test('should preserve list node metadata', () => {
+    tree = new Tree();
+    tree.createList(['tasks']);
+    tree.push(['tasks'], { title: 'Task 1' });
+
+    const json = tree.toJSON();
+    expect(json.children.tasks.type).toBe('list');
+    expect(json.children.tasks.valueType).toBe('any');
+    expect(json.children.tasks.children).toHaveLength(1);
+  });
+
+  test('should handle empty nodes', () => {
+    tree = new Tree();
+    tree.createNode(['emptyTree']);
+    tree.createList(['emptyList']);
+
+    const restored = Tree.fromJSON(tree.toJSON());
+
+    expect(restored.getNode(['emptyTree']).children).toEqual({});
+    expect(restored.getList(['emptyList']).children).toEqual([]);
+  });
+
+  test('should maintain module flags', () => {
+    tree = new Tree();
+    tree.createModule(['core', 'auth']);
+
+    const json = tree.toJSON();
+    expect(json.children.core.children.auth.isModule).toBe(true);
+
+    const restored = Tree.fromJSON(json);
+    expect(restored.getNode(['core', 'auth']).isModule).toBe(true);
+  });
+
+  test('should throw on invalid node types during deserialization', () => {
+    const invalidJSON = {
+      type: 'invalid',
+      name: 'bad-node',
+    };
+
+    expect(() => Tree.fromJSON(invalidJSON)).toThrow('Unknown node type: invalid');
+  });
+});
+
+describe('Checkpoint and Restore', () => {
+  let tree: Tree;
+
+  beforeEach(() => {
+    tree = new Tree();
+  });
+
+  test('should create checkpoints and track diffs', () => {
+    // Initial state
+    tree.setCheckpoint();
+    expect(tree.diffLog.length).toBe(1);
+
+    // First change
+    tree.set(['config', 'timeout'], 5000);
+    tree.setCheckpoint();
+    expect(tree.diffLog.length).toBe(2);
+
+    // Second change
+    tree.set(['config', 'debug'], true);
+    tree.setCheckpoint();
+    expect(tree.diffLog.length).toBe(3);
+  });
+
+  test('should restore to previous checkpoints', () => {
+    // Make changes and create checkpoints
+    tree.set(['version'], '1.0.0');
+    tree.setCheckpoint(); // checkpoint 1
+    tree.set(['feature', 'auth'], true);
+    console.log('tree', tree.root);
+    tree.setCheckpoint(); // checkpoint 2
+    tree.delete(['feature', 'auth']);
+    tree.setCheckpoint(); // checkpoint 3
+
+    // Restore to checkpoint 2
+    const restored = tree.restore(2);
+    console.log('restored', restored.root);
+    expect(restored.get(['version'])).toBe('1.0.0');
+    expect(restored.get(['feature', 'auth'])).toBe(true);
+
+    // Restore to checkpoint 1
+    const restored2 = tree.restore(1);
+    expect(restored2.get(['version'])).toBe('1.0.0');
+    expect(() => restored2.get(['feature', 'auth'])).toThrow(PathNotFoundError);
+  });
+
+  test('should handle complex structure restoration', () => {
+    tree.createModule(['core']);
+    tree.set(['core', 'version'], '1.0.0');
+    tree.setCheckpoint(); // checkpoint 1
+
+    tree.createList(['users']);
+    tree.push(['users'], { name: 'Alice' });
+    tree.setCheckpoint(); // checkpoint 2
+
+    tree.push(['users'], { name: 'Bob' });
+    tree.setCheckpoint(); // checkpoint 3
+
+    // Restore to checkpoint 2
+    const restored = tree.restore(2);
+    expect(restored.getList(['users']).children.length).toBe(1);
+    expect(extractNodeAsObject(restored, ['users', '1'])).toEqual({ name: 'Alice' });
+
+    // Restore to checkpoint 1
+    const restored2 = tree.restore(1);
+    expect(() => restored2.getList(['users'])).toThrow(PathNotFoundError);
+    expect(restored2.get(['core', 'version'])).toBe('1.0.0');
+  });
+
+  test('should handle empty diffs', () => {
+    // Initial checkpoint with no changes
+    tree.setCheckpoint();
+    expect(tree.diffLog[0]).toEqual([]);
+
+    // Restore to initial state
+    const restored = tree.restore(0);
+    expect(restored.root).toEqual(tree.root);
+  });
+
+  test('should throw for invalid checkpoint indices', () => {
+    tree.setCheckpoint();
+    tree.setCheckpoint();
+
+    expect(() => tree.restore(-1)).toThrow('Invalid checkpoint index: -1');
+    expect(() => tree.restore(2)).toThrow('Invalid checkpoint index: 2');
+    expect(() => tree.restore(1.5)).toThrow('Invalid checkpoint index: 1.5');
+  });
+});
