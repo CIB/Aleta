@@ -1,6 +1,6 @@
 import { Dictionary } from 'lodash';
 import { Tree } from '../../tree/tree';
-import { extractNodeAsObject, findModule } from '../../tree/tree-helpers';
+import { findModule } from '../../tree/tree-helpers';
 import { getFunctionAtPath, runFunction, TreeFunction } from '../function';
 import { schemaToTypeScript } from '../type-checker';
 import { SystemContext } from '../../system/system-context';
@@ -88,17 +88,17 @@ export async function addModuleTreeManipulationToContext(
 
   context.c.$$getNodes = (path: string) => {
     const fullPath = [...module, ...path.split('/')];
-    return extractNodeAsObject(tree, fullPath);
+    return tree.getJSON(fullPath);
   };
 
   context.c.$$patchNode = (path: string, value: object) => {
     const fullPath = [...module, ...path.split('/')];
-    tree.patchNode(fullPath, value);
+    tree.insert(fullPath, value);
   };
 
   context.c.$$llm = (path: string, input: any) => {
     const fullPath = [...module, ...path.split('/')];
-    const llmConfig = extractNodeAsObject<LLMCall>(tree, fullPath);
+    const llmConfig = tree.getJSON<LLMCall>(fullPath);
     return runLLMCall(system, llmConfig, input);
   };
 
@@ -142,11 +142,11 @@ export async function addTreeManipulationToContext(
     },
     getNodes: (path: string) => {
       const fullPath = path.split('/');
-      return extractNodeAsObject(tree, fullPath);
+      return tree.getJSON(fullPath);
     },
     patchNode: (path: string, value: object) => {
       const fullPath = path.split('/');
-      tree.patchNode(fullPath, value);
+      tree.insert(fullPath, value);
     },
     llm: (path: string, input: any) => {
       const fullPath = path.split('/');
@@ -156,7 +156,7 @@ export async function addTreeManipulationToContext(
       const node = tree.getNodeOrList(fullPath);
       console.log('Node from tree:', node);
 
-      const llmConfig = extractNodeAsObject<LLMCall>(tree, fullPath);
+      const llmConfig = tree.getJSON<LLMCall>(fullPath);
       console.log('Extracted LLM config:', llmConfig);
 
       return runLLMCall(system, llmConfig, input);

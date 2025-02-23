@@ -1,5 +1,4 @@
 import { Tree } from '../../tree/tree';
-import { extractNodeAsObject, findModule } from '../../tree/tree-helpers';
 import ts from 'typescript';
 import { TreeFunction } from '../function';
 import { Schema } from '../type-checker';
@@ -74,7 +73,7 @@ export async function inferFunctionReturnType(
   executionContext: ExecutionContext,
   functionPath: string[],
 ): Promise<Schema> {
-  const functionConfig: TreeFunction = extractNodeAsObject<TreeFunction>(system.tree, functionPath);
+  const functionConfig = system.tree.getJSON<TreeFunction>(functionPath);
   const { typescriptCode, c } = await buildSandboxContext(system, executionContext, functionPath, null);
   return inferReturnType(typescriptCode, functionConfig.code);
 }

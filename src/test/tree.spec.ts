@@ -9,7 +9,7 @@ import {
   PathNotFoundError,
   PathTypeMismatchError,
 } from '../tree/tree';
-import { extractNodeAsObject, findModule } from '../tree/tree-helpers';
+import { findModule } from '../tree/tree-helpers';
 
 describe('Tree Operations', () => {
   let tree: Tree;
@@ -112,9 +112,9 @@ describe('Tree Operations', () => {
       const list = tree.getNodeOrList(['tasks']) as ListNode;
       expect(list.children.length).toBe(2);
 
-      const task1 = extractNodeAsObject(tree, ['tasks', '1']);
+      const task1 = tree.getJSON(['tasks', '1']);
       expect(task1).toEqual({ node: 'task1', input: null, output: null });
-      const task2 = extractNodeAsObject(tree, ['tasks', '2']);
+      const task2 = tree.getJSON(['tasks', '2']);
       expect(task2).toEqual({ node: 'task2', input: null, output: null });
     });
 
@@ -243,12 +243,12 @@ describe('Tree Operations', () => {
       // Access data through the list's children
       const item0 = (list as ListNode).children[0];
       expect(item0.type).toBe('tree');
-      const item1Node = extractNodeAsObject(tree, ['items', '1']);
+      const item1Node = tree.getJSON(['items', '1']);
       expect(item1Node).toEqual({ node: 'item1', input: null, output: null });
 
       const item1 = (list as ListNode).children[1];
       expect(item1.type).toBe('tree');
-      const item2Node = extractNodeAsObject(tree, ['items', '2']);
+      const item2Node = tree.getJSON(['items', '2']);
       expect(item2Node).toEqual({ node: 'item2', input: null, output: null });
     });
 
@@ -540,11 +540,11 @@ describe('Node Construction', () => {
     tree.set(['config', 'settings', 'server', 'port'], 8080);
 
     // Extract the object
-    const extracted = extractNodeAsObject<{
+    const extracted = tree.getJSON<{
       timeout: number;
       features: string[];
       server: { host: string; port: number };
-    }>(tree, ['config', 'settings']);
+    }>(['config', 'settings']);
 
     // Verify the structure
     expect(extracted).toEqual({
@@ -693,10 +693,10 @@ describe('Object Insertion', () => {
     const users = tree.getNodeOrList(['data', 'users']);
     expect(users.type).toBe('list');
 
-    const alice = extractNodeAsObject(tree, ['data', 'users', '1']);
+    const alice = tree.getJSON(['data', 'users', '1']);
     expect(alice).toEqual({ name: 'Alice', age: 30 });
 
-    const bob = extractNodeAsObject(tree, ['data', 'users', '2']);
+    const bob = tree.getJSON(['data', 'users', '2']);
     expect(bob).toEqual({ name: 'Bob', age: 25 });
   });
 
@@ -846,8 +846,8 @@ describe('JSON Serialization', () => {
     // Verify list structure
     const usersList = restored.getList(['users']);
     expect(usersList.children.length).toBe(2);
-    expect(extractNodeAsObject(restored, ['users', '1'])).toEqual({ name: 'Alice', roles: ['admin'] });
-    expect(extractNodeAsObject(restored, ['users', '2'])).toEqual({ name: 'Bob', roles: ['user'] });
+    expect(tree.getJSON(['users', '1'])).toEqual({ name: 'Alice', roles: ['admin'] });
+    expect(tree.getJSON(['users', '2'])).toEqual({ name: 'Bob', roles: ['user'] });
   });
 
   test('should preserve data types in DataNodes', () => {
@@ -984,7 +984,7 @@ describe('Checkpoint and Restore', () => {
     // Restore to checkpoint 2
     const restored = tree.restore(2);
     expect(restored.getList(['users']).children.length).toBe(1);
-    expect(extractNodeAsObject(restored, ['users', '1'])).toEqual({ name: 'Alice' });
+    expect(tree.getJSON(['users', '1'])).toEqual({ name: 'Alice' });
 
     // Restore to checkpoint 1
     const restored2 = tree.restore(1);
@@ -1009,5 +1009,64 @@ describe('Checkpoint and Restore', () => {
     expect(() => tree.restore(-1)).toThrow('Invalid checkpoint index: -1');
     expect(() => tree.restore(2)).toThrow('Invalid checkpoint index: 2');
     expect(() => tree.restore(1.5)).toThrow('Invalid checkpoint index: 1.5');
+  });
+});
+
+describe('getJSON', () => {
+  test('should convert a tree node to JSON', () => {
+    const tree = new Tree();
+    tree.insertObject(['person'], {
+      name: 'Alice',
+      age: 30,
+      hobbies: ['coding', 'reading'],
+      address: {
+        street: '123 Main St',
+        city: 'Springfield',
+      },
+    });
+
+    const result = tree.getJSON(['person']);
+    expect(result).toEqual({
+      name: 'Alice',
+      age: 30,
+      hobbies: ['coding', 'reading'],
+      address: {
+        street: '123 Main St',
+        city: 'Springfield',
+      },
+    });
+  });
+
+  test('should convert a list node to JSON array', () => {
+    const tree = new Tree();
+    tree.insert(
+      ['items'],
+      [
+        { name: 'item1', value: 10 },
+        { name: 'item2', value: 20 },
+      ],
+    );
+
+    const result = tree.getJSON(['items']);
+    expect(result).toEqual([
+      { name: 'item1', value: 10 },
+      { name: 'item2', value: 20 },
+    ]);
+  });
+
+  test('should return primitive values for data nodes', () => {
+    const tree = new Tree();
+    tree.set(['value'], 42);
+    tree.set(['name'], 'Alice');
+    tree.set(['active'], true);
+
+    expect(tree.getJSON(['value'])).toBe(42);
+    expect(tree.getJSON(['name'])).toBe('Alice');
+    expect(tree.getJSON(['active'])).toBe(true);
+  });
+
+  test('should throw PathNotFoundError for non-existent paths', () => {
+    const tree = new Tree();
+    expect(() => tree.getJSON(['nonexistent'])).toThrow(PathNotFoundError);
   });
 });

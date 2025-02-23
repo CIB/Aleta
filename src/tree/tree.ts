@@ -835,4 +835,27 @@ export class Tree {
     }
     delete parent.children[index];
   }
+
+  public getJSON<T = any>(path: string[]): T {
+    const node = this.getNodeUnion(path);
+    return this.convertNodeToJSON(node);
+  }
+
+  private convertNodeToJSON(node: NodeUnion): any {
+    switch (node.type) {
+      case 'data':
+        return node.value;
+      case 'tree': {
+        const obj: Record<string, any> = {};
+        for (const [key, child] of Object.entries(node.children)) {
+          obj[key] = this.convertNodeToJSON(child);
+        }
+        return obj;
+      }
+      case 'list':
+        return node.children.map((child) => this.convertNodeToJSON(child));
+      default:
+        throw new Error(`Unexpected node type: ${(node as any).type}`);
+    }
+  }
 }

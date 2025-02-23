@@ -1,10 +1,7 @@
-import { assertType, Schema } from './type-checker';
-import { ExecutionContext } from './execution-context';
-import { inferFunctionReturnType, inferReturnType, runInSandbox } from './sandbox/sandbox';
 import { Tree } from '../tree/tree';
-import assert from 'assert';
-import { extractNodeAsObject } from '../tree/tree-helpers';
-import { SystemContext } from '../system/system-context';
+import { ExecutionContext } from './execution-context';
+import { inferFunctionReturnType, runInSandbox } from './sandbox/sandbox';
+import { assertType, Schema } from './type-checker';
 
 export interface TreeFunction {
   // The type of input the function expects
@@ -18,13 +15,13 @@ export interface TreeFunction {
 }
 
 export function getFunctionAtPath(tree: Tree, functionPath: string[]): TreeFunction {
-  const functionConfig = extractNodeAsObject<TreeFunction>(tree, functionPath);
+  const functionConfig = tree.getJSON<TreeFunction>(functionPath);
   // TODO: Use JSON schema to validate that the function config has the correct properties
   return functionConfig;
 }
 
 export function writeFunction(tree: Tree, functionPath: string[], func: TreeFunction) {
-  return tree.patchNode(functionPath, func);
+  return tree.insert(functionPath, func);
 }
 
 export async function runFunction(

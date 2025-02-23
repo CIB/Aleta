@@ -138,7 +138,7 @@ describe('Sandbox', () => {
     });
 
     test('should handle push operation', async () => {
-      tree.patchList(['items']);
+      tree.createList(['items']);
 
       const result = await runInSandbox(
         system,
@@ -225,7 +225,7 @@ describe('Sandbox', () => {
     });
 
     test('should handle root push operation', async () => {
-      tree.patchList(['items']);
+      tree.createList(['items']);
 
       await runInSandbox(
         system,
@@ -291,7 +291,7 @@ describe('Sandbox', () => {
 
   test('should handle LLM calls through root.llm', async () => {
     // Set up an LLM template in the tree
-    tree.patchNode(['llm_templates', 'reverse_string'], {
+    tree.insert(['llm_templates', 'reverse_string'], {
       llm: 'Reverse the string: hello',
       input: 'string',
       output: 'string',
@@ -316,7 +316,7 @@ describe('Sandbox', () => {
     tree.createModule(['module']);
 
     // Set up an LLM template in the tree
-    tree.patchNode(['module', 'llm_templates', 'reverse_string'], {
+    tree.insert(['module', 'llm_templates', 'reverse_string'], {
       llm: 'Reverse the string.',
       input: 'string',
       output: 'string',

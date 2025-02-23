@@ -1,7 +1,7 @@
-import { z, ZodObject } from 'zod';
-import { assertType, isObjectSchema, normalizeSchema, Schema, validateType } from './type-checker';
 import assert from 'assert';
+import { ZodObject } from 'zod';
 import { LLMOptionsWithBackend, SystemContext } from '../system/system-context';
+import { assertType, isObjectSchema, normalizeSchema, Schema } from './type-checker';
 
 export interface LLMCall {
   // The type of input the LLM call expects

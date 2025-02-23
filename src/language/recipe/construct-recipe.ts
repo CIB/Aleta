@@ -19,7 +19,7 @@ const mergeRequestDescription = $do('Create a description of the merge request b
 export function buildNodeForConstructRecipe(system: SystemContext) {
   const tree = system.tree;
   const path = p('core/recipe/construct');
-  tree.patchNode(path);
+  tree.createNode(path);
   tree.createModule(path);
 
   writeFunction(tree, path, {
@@ -58,5 +58,5 @@ export function buildNodeForConstructRecipe(system: SystemContext) {
     constraints: [],
   };
 
-  tree.patchNode([...path, 'llm_recipe'], llmRecipe);
+  tree.insert([...path, 'llm_recipe'], llmRecipe);
 }

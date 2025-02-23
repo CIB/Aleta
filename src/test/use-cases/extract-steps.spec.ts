@@ -33,7 +33,7 @@ describe('ExecutionContext', () => {
     console.log('Node!!', node);
 
     // Prompt helper to
-    tree.patchNode(p('core/task/processResponse/alternativesOrSteps'), {
+    tree.insert(p('core/task/processResponse/alternativesOrSteps'), {
       input: parseResponseSchema,
       output: 'boolean',
       llm: `
@@ -43,7 +43,7 @@ describe('ExecutionContext', () => {
         `,
     });
 
-    tree.patchNode(p('core/task/processResponse/extractAlternatives'), {
+    tree.insert(p('core/task/processResponse/extractAlternatives'), {
       input: parseResponseSchema,
       output: {
         type: 'array',
@@ -58,7 +58,7 @@ describe('ExecutionContext', () => {
         `,
     });
 
-    tree.patchNode(p('core/task/processResponse/parseAlternatives'), {
+    tree.insert(p('core/task/processResponse/parseAlternatives'), {
       input: parseResponseSchema,
       code: `
         const alternatives = $$llm('extractAlternatives', input);
@@ -69,7 +69,7 @@ describe('ExecutionContext', () => {
       `,
     });
 
-    tree.patchNode(p('core/task/processResponse/extractSteps'), {
+    tree.insert(p('core/task/processResponse/extractSteps'), {
       input: parseResponseSchema,
       output: {
         type: 'array',
@@ -84,7 +84,7 @@ describe('ExecutionContext', () => {
         `,
     });
 
-    tree.patchNode(p('core/task/processResponse/parseSteps'), {
+    tree.insert(p('core/task/processResponse/parseSteps'), {
       input: parseResponseSchema,
       code: `
         const steps = $$llm('extractSteps', input);
@@ -95,7 +95,7 @@ describe('ExecutionContext', () => {
       `,
     });
 
-    tree.merge(p('core/task/processResponse'), {
+    tree.insert(p('core/task/processResponse'), {
       input: {
         type: 'object',
         properties: {

@@ -16,8 +16,7 @@ describe('Function Execution', () => {
 
   test('should run simple function', async () => {
     // Write a function to the tree
-    tree.patchNode(['functions', 'add']);
-    tree.merge(['functions', 'add'], {
+    tree.insert(['functions', 'add'], {
       input: { type: 'object', properties: { a: { type: 'number' }, b: { type: 'number' } }, required: ['a', 'b'] },
       code: `
         const { a, b } = input;
@@ -31,8 +30,7 @@ describe('Function Execution', () => {
   });
 
   test('should validate function input', async () => {
-    tree.patchNode(['functions', 'add']);
-    tree.merge(['functions', 'add'], {
+    tree.insert(['functions', 'add'], {
       input: {
         type: 'object',
         properties: { a: { type: 'number' }, b: { type: 'number' } },
@@ -48,8 +46,7 @@ describe('Function Execution', () => {
   });
 
   test('should handle async functions', async () => {
-    tree.patchNode(['functions', 'asyncAdd']);
-    tree.merge(['functions', 'asyncAdd'], {
+    tree.insert(['functions', 'asyncAdd'], {
       input: { type: 'object', properties: { a: { type: 'number' }, b: { type: 'number' } }, required: ['a', 'b'] },
       code: `
         const { a, b } = input;

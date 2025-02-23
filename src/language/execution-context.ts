@@ -1,7 +1,4 @@
-import { Dictionary } from 'lodash';
 import { Tree } from '../tree/tree';
-import { extractDataList, nodeToObject } from '../tree/tree-helpers';
-import assert from 'assert';
 import { SystemContext } from '../system/system-context';
 
 export type InputType = object | string | number | boolean | null;
@@ -39,7 +36,7 @@ export function getFrameAtPath(tree: Tree, path: string[]): ExecutionTreeFrame {
 
   // TODO: use JSON schema and ajv to validate that the frame has the correct properties
 
-  const frameObject = nodeToObject<ExecutionTreeFrame>(frameNode);
+  const frameObject = tree.getJSON<ExecutionTreeFrame>(path);
   return frameObject;
 }
 
@@ -48,4 +45,5 @@ export interface ExecutionTreeFrame {
   node: string;
   input: InputType;
   output: InputType;
+  children?: ExecutionTreeFrame[];
 }

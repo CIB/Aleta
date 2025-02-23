@@ -1,5 +1,5 @@
 import { expect, test, describe, beforeEach } from 'bun:test';
-import { runLLMCall } from '../language/llm-call';
+import { LLMCall, runLLMCall } from '../language/llm-call';
 import { createTestSystemContext } from '../system/test-system-context';
 import { SystemContext } from '../system/system-context';
 
@@ -11,7 +11,7 @@ describe('runLLMCall', () => {
   });
 
   test('should handle basic string input/output', async () => {
-    const config = {
+    const config: LLMCall = {
       llm: 'Reverse the string',
       input: 'string',
       output: 'string',
@@ -60,7 +60,7 @@ describe('runLLMCall', () => {
   });
 
   test('should handle examples for multi-shot learning', async () => {
-    const config = {
+    const config: LLMCall = {
       llm: 'Convert temperature from Celsius to Fahrenheit',
       input: 'number',
       output: 'number',
@@ -76,7 +76,7 @@ describe('runLLMCall', () => {
   });
 
   test('should handle constraints', async () => {
-    const config = {
+    const config: LLMCall = {
       llm: 'Write a short description of a cat',
       input: 'string',
       output: 'string',
@@ -90,7 +90,7 @@ describe('runLLMCall', () => {
   });
 
   test('should throw error for invalid input', async () => {
-    const config = {
+    const config: LLMCall = {
       llm: 'Reverse the string',
       input: 'string',
       output: 'string',
@@ -102,7 +102,7 @@ describe('runLLMCall', () => {
   });
 
   test('should throw error for invalid output', async () => {
-    const config = {
+    const config: LLMCall = {
       llm: 'Reverse the string',
       input: 'string',
       output: 'string',
@@ -117,7 +117,7 @@ describe('runLLMCall', () => {
   });
 
   test('should throw error for invalid object input structure', async () => {
-    const config = {
+    const config: LLMCall = {
       llm: 'Format the user information',
       input: {
         type: 'object',
