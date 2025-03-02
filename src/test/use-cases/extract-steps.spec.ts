@@ -13,8 +13,8 @@ describe('ExecutionContext', () => {
   let system: SystemContext;
   let context: ExecutionContext;
 
-  beforeEach(() => {
-    system = createTestSystemContext();
+  beforeEach(async () => {
+    system = await createTestSystemContext();
     tree = system.tree;
     context = new ExecutionContext(system, ['stackframe']);
 

@@ -11,8 +11,8 @@ describe('Sandbox', () => {
   let tree: Tree;
   let executionContext: ExecutionContext;
 
-  beforeEach(() => {
-    system = createTestSystemContext();
+  beforeEach(async () => {
+    system = await createTestSystemContext();
     tree = system.tree;
     executionContext = new ExecutionContext(system, ['stackframe']);
   });

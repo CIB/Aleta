@@ -5,6 +5,7 @@ import { OpenAIBackend } from '../llm/openai-backend';
 import { Tree } from '../tree/tree';
 import type { Dictionary } from 'lodash';
 import { loadStdlib } from './stdlib';
+import { DslSerializer } from '@/tree/tree-dsl-serializer';
 
 export interface LLMOptionsWithBackend extends LLMOptions {
   backend?: string;
@@ -30,8 +31,11 @@ export class SystemContext {
         ['gpt-4o-mini', 'gpt-4o', 'deepseek/deepseek-chat'],
       );
     }
+  }
 
-    loadStdlib(this);
+  async init() {
+    await loadStdlib(this);
+    console.log(new DslSerializer().serialize(this.tree));
   }
 
   async prompt(question: string, options: LLMOptionsWithBackend = {}) {

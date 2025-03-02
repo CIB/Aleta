@@ -55,15 +55,33 @@ export class DslSerializer {
   }
 
   private yamlStringify(data: any): string {
-    return YAML.stringify(data, {
+    // Create a YAML document
+    const doc = YAML.parseDocument(YAML.stringify(data));
+
+    // Recursively process all nodes
+    const processNode = (node: any) => {
+      if (node.type === 'SCALAR' && typeof node.value === 'string') {
+        // Only use block style for multi-line strings
+        if (node.value.includes('\n')) {
+          node.type = 'BLOCK_LITERAL';
+        } else {
+          node.type = 'PLAIN';
+        }
+      }
+      if (node.items) {
+        node.items.forEach(processNode);
+      }
+      if (node.value) {
+        processNode(node.value);
+      }
+    };
+
+    // Process the document content
+    doc.contents && processNode(doc.contents);
+
+    return doc.toString({
       defaultKeyType: 'PLAIN' as const,
-      defaultStringType: 'BLOCK_LITERAL' as const,
       lineWidth: 0,
-      sortMapEntries: (a, b) => {
-        if (a.key === '$module') return -1;
-        if (b.key === '$module') return 1;
-        return String(a.key).localeCompare(String(b.key));
-      },
     });
   }
 

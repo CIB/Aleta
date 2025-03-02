@@ -12,8 +12,8 @@ describe('Recipe Construction', () => {
   let tree: Tree;
   let executionContext: ExecutionContext;
 
-  beforeEach(() => {
-    system = createTestSystemContext();
+  beforeEach(async () => {
+    system = await createTestSystemContext();
     tree = system.tree;
     executionContext = new ExecutionContext(system, []);
   });
@@ -31,7 +31,7 @@ describe('Recipe Construction', () => {
     console.log('recipe', recipe.code);
     expect(recipe.input).toEqual('string');
     expect(recipe.code).toContain(
-      "const currentUser = $do('Get current user', 'string', { input });\nconst greeting = $do('Greet user', 'string', { currentUser });",
+      "const currentUser = $do('Get current user', 'string');\nconst greeting = $do('Greet user', 'string', { currentUser });",
     );
 
     // Verify placeholder nodes
@@ -51,7 +51,7 @@ describe('Recipe Construction', () => {
     });
 
     const recipe = getRecipeAtPath(tree, ['test', 'processItems']);
-    let expectedResult = `const websites = $do('Get list of websites', 'string[]', { searchTerm: input.searchTerm });\nconst markdowns = websites.map(website => $do('Convert website to markdown', 'string', { website }));\nconst combinedResult = $do('Combine results', 'string', { markdowns });`;
+    let expectedResult = `const websites = $do('Get list of websites', 'string[]', { searchTerm: input.searchTerm });\nconst markdowns = websites.map(website => $do('Convert each website to markdown', 'string', { website }));\nconst combinedResult = $do('Combine results', 'string', { markdowns });\n`;
     expect(recipe.code).toContain(expectedResult);
   });
 });

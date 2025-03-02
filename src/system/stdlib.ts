@@ -3,6 +3,6 @@
 import { buildNodeForConstructRecipe } from '../language/recipe/construct-recipe';
 import { SystemContext } from './system-context';
 
-export function loadStdlib(system: SystemContext) {
-  buildNodeForConstructRecipe(system);
+export async function loadStdlib(system: SystemContext) {
+  await buildNodeForConstructRecipe(system);
 }

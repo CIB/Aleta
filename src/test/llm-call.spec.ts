@@ -6,8 +6,8 @@ import { SystemContext } from '../system/system-context';
 describe('runLLMCall', () => {
   let system: SystemContext;
 
-  beforeEach(() => {
-    system = createTestSystemContext();
+  beforeEach(async () => {
+    system = await createTestSystemContext();
   });
 
   test('should handle basic string input/output', async () => {

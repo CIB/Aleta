@@ -8,8 +8,8 @@ describe('Function Execution', () => {
   let tree: Tree;
   let executionContext: ExecutionContext;
 
-  beforeEach(() => {
-    const system = createTestSystemContext();
+  beforeEach(async () => {
+    const system = await createTestSystemContext();
     tree = system.tree;
     executionContext = new ExecutionContext(system, []);
   });

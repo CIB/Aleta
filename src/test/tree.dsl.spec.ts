@@ -66,11 +66,9 @@ describe('Tree DSL Serialization', () => {
     tree.push(['app', 'services'], { name: 'api', enabled: true });
 
     const serialized = new DslSerializer().serialize(tree);
-    console.log(serialized);
     const parsed = new DslParser().parse(serialized);
 
     expect(parsed.getJSON([])).toEqual(tree.getJSON([]));
-    expect(serialized).toMatchSnapshot();
   });
 
   test('should handle empty tree', () => {

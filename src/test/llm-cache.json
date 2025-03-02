@@ -39,22 +39,6 @@
     },
     "answer": "{\"result\":\"\\nconst changedFiles = $do('Get a complete list of all changes', 'string[]');\\nconst changedContents = $do('Get the contents of all changed files', 'string[]', { changedFiles });\\nconst summaries = changedContents.map(content => $do('Create a summary of the changes for the file', 'string', { content }));\\nconst mergeRequestDescription = $do('Create a description of the merge request based on all the summaries', 'string', {\\n  summaries,\\n});\"}"
   },
-  "37e5e8f72c3c681cae9bdbf9439e10f393c1d8746970c4b715e6390a1e977161": {
-    "question": "Construct a recipe for the given path and description. The recipe can also access an `input` variable of type `recipeInputType`\n\nThe input is: {\"recipeDescription\":\"1. Get current user\\n2. Greet user\",\"recipeInputType\":\"string\"}\n\nHere are some input/output examples of the expected result:\n\n[{\"input\":\"1. Get a complete list of all changes\\n2. Get the contents of all changed files\\n3. For each file, create a summary of the changes\\n4. Create a description of the merge request based on all the summaries\",\"output\":\"\\nconst changedFiles = $do('Get a complete list of all changes', 'string[]');\\nconst changedContents = $do('Get the contents of all changed files', 'string[]', { changedFiles });\\nconst summaries = changedContents.map(content => $do('Create a summary of the changes for the file', 'string', { content }));\\nconst mergeRequestDescription = $do('Create a description of the merge request based on all the summaries', 'string', {\\n  summaries,\\n});\"}]\n\nNow handle this input similarly:\nAdditional constraints for the output:\n\n- Please provide the output in a JSON format matching the following JSON schema: {\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"string\"}},\"required\":[\"result\"]}",
-    "options": {
-      "json": true,
-      "backend": "default"
-    },
-    "answer": "{\n  \"result\": \"\\nconst currentUser = $do('Get current user', 'string', { input });\\nconst greeting = $do('Greet user', 'string', { currentUser });\"\n}"
-  },
-  "35cdd17044b3f011eab08233a42c9ee46359c2b3694781bd14ac9ee7a148c473": {
-    "question": "Construct a recipe for the given path and description. The recipe can also access an `input` variable of type `recipeInputType`\n\nThe input is: {\"recipeDescription\":\"1. Get list of websites\\n2. Convert each website to markdown\\n3. Combine results\",\"recipeInputType\":\"{ searchTerm: string }\"}\n\nHere are some input/output examples of the expected result:\n\n[{\"input\":\"1. Get a complete list of all changes\\n2. Get the contents of all changed files\\n3. For each file, create a summary of the changes\\n4. Create a description of the merge request based on all the summaries\",\"output\":\"\\nconst changedFiles = $do('Get a complete list of all changes', 'string[]');\\nconst changedContents = $do('Get the contents of all changed files', 'string[]', { changedFiles });\\nconst summaries = changedContents.map(content => $do('Create a summary of the changes for the file', 'string', { content }));\\nconst mergeRequestDescription = $do('Create a description of the merge request based on all the summaries', 'string', {\\n  summaries,\\n});\"}]\n\nNow handle this input similarly:\nAdditional constraints for the output:\n\n- Please provide the output in a JSON format matching the following JSON schema: {\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"string\"}},\"required\":[\"result\"]}",
-    "options": {
-      "json": true,
-      "backend": "default"
-    },
-    "answer": "{\n  \"result\": \"\\nconst websites = $do('Get list of websites', 'string[]', { searchTerm: input.searchTerm });\\nconst markdowns = websites.map(website => $do('Convert website to markdown', 'string', { website }));\\nconst combinedResult = $do('Combine results', 'string', { markdowns });\"\n}"
-  },
   "f4874f37282b8fedea600adb19c008e2d25c69baf4ec960bbf4163ad684425ce": {
     "question": "Reverse the string\n\nThe input is: \"hello\"\n\nAdditional constraints for the output:\n\n- Please provide the output in a JSON format matching the following JSON schema: {\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"string\"}},\"required\":[\"result\"]}",
     "options": {
@@ -86,5 +70,21 @@
       "backend": "default"
     },
     "answer": "{\"result\":\"A cat is a small, furry, playful, and independent animal.\"}"
+  },
+  "c7fb9411316d825a23c1d739e1bd81c1d7e1abbef60f96bee7b3fbe95d0c1163": {
+    "question": "Construct a recipe for the given path and description. The recipe can also access an `input` variable of type `recipeInputType`\n\nThe input is: {\"recipeDescription\":\"1. Get current user\\n2. Greet user\",\"recipeInputType\":\"string\"}\n\nHere are some input/output examples of the expected result:\n\n[{\"input\":\"1. Get a complete list of all changes\\n2. Get the contents of all changed files\\n3. For each file, create a summary of the changes\\n4. Create a description of the merge request based on all the summaries\\n\",\"output\":\"const changedFiles = $do('Get a complete list of all changes', 'string[]');\\nconst changedContents = $do('Get the contents of all changed files', 'string[]', { changedFiles });\\nconst summaries = changedContents.map(content => $do('Create a summary of the changes for the file', 'string', { content }));\\nconst mergeRequestDescription = $do('Create a description of the merge request based on all the summaries', 'string', {\\n  summaries,\\n});\\n\"}]\n\nNow handle this input similarly:\nAdditional constraints for the output:\n\n- Please provide the output in a JSON format matching the following JSON schema: {\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"string\"}},\"required\":[\"result\"]}",
+    "options": {
+      "json": true,
+      "backend": "default"
+    },
+    "answer": "{\n  \"result\": \"const currentUser = $do('Get current user', 'string');\\nconst greeting = $do('Greet user', 'string', { currentUser });\\n\"\n}"
+  },
+  "5d84dc11d16134348d0013f4e7679861303c78f74c94ae9c4a66b2beeec146f7": {
+    "question": "Construct a recipe for the given path and description. The recipe can also access an `input` variable of type `recipeInputType`\n\nThe input is: {\"recipeDescription\":\"1. Get list of websites\\n2. Convert each website to markdown\\n3. Combine results\",\"recipeInputType\":\"{ searchTerm: string }\"}\n\nHere are some input/output examples of the expected result:\n\n[{\"input\":\"1. Get a complete list of all changes\\n2. Get the contents of all changed files\\n3. For each file, create a summary of the changes\\n4. Create a description of the merge request based on all the summaries\\n\",\"output\":\"const changedFiles = $do('Get a complete list of all changes', 'string[]');\\nconst changedContents = $do('Get the contents of all changed files', 'string[]', { changedFiles });\\nconst summaries = changedContents.map(content => $do('Create a summary of the changes for the file', 'string', { content }));\\nconst mergeRequestDescription = $do('Create a description of the merge request based on all the summaries', 'string', {\\n  summaries,\\n});\\n\"}]\n\nNow handle this input similarly:\nAdditional constraints for the output:\n\n- Please provide the output in a JSON format matching the following JSON schema: {\"type\":\"object\",\"properties\":{\"result\":{\"type\":\"string\"}},\"required\":[\"result\"]}",
+    "options": {
+      "json": true,
+      "backend": "default"
+    },
+    "answer": "{\n  \"result\": \"const websites = $do('Get list of websites', 'string[]', { searchTerm: input.searchTerm });\\nconst markdowns = websites.map(website => $do('Convert each website to markdown', 'string', { website }));\\nconst combinedResult = $do('Combine results', 'string', { markdowns });\\n\"\n}"
   }
 }

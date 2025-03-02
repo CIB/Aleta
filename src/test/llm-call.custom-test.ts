@@ -2,6 +2,7 @@ import { LLMCall, runLLMCall } from '../language/llm-call';
 import { SystemContext } from '../system/system-context';
 
 const system = new SystemContext();
+await system.init();
 
 const llmCall: LLMCall = {
   llm: 'Reverse the string.',

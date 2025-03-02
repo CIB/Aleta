@@ -7,8 +7,8 @@ describe('ExecutionContext', () => {
   let tree: Tree;
   let context: ExecutionContext;
 
-  beforeEach(() => {
-    const system = createTestSystemContext();
+  beforeEach(async () => {
+    const system = await createTestSystemContext();
     tree = system.tree;
     context = new ExecutionContext(system, ['stackframe']);
   });
