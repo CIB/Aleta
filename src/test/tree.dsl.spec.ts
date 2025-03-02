@@ -103,4 +103,99 @@ describe('Tree DSL Serialization', () => {
     expect(parsed.nodeExists(['with', 'slash'])).toBeTrue();
     expect(parsed.getNode(['with', 'slash']).isModule).toBeTrue();
   });
+
+  test('should handle nested lists', () => {
+    const tree = new Tree();
+    tree.createList(['nested']);
+    tree.push(['nested'], {});
+    tree.push(['nested'], {});
+    tree.createList(['nested', '1', 'items']);
+    tree.push(['nested', '1', 'items'], 'a');
+    tree.push(['nested', '1', 'items'], 'b');
+
+    const serialized = new DslSerializer().serialize(tree);
+    const parsed = new DslParser().parse(serialized);
+
+    expect(parsed.getJSON([])).toEqual(tree.getJSON([]));
+  });
+
+  test('should handle complex objects in lists', () => {
+    const tree = new Tree();
+    tree.createList(['objects']);
+    tree.push(['objects'], { name: 'first', value: 1 });
+    tree.push(['objects'], { name: 'second', nested: { value: 2 } });
+
+    const serialized = new DslSerializer().serialize(tree);
+    const parsed = new DslParser().parse(serialized);
+
+    expect(parsed.getJSON([])).toEqual(tree.getJSON([]));
+  });
+
+  test('should handle special characters in keys', () => {
+    const tree = new Tree();
+    tree.set(['special-chars', 'key-with-dash'], 'dash');
+    tree.set(['special-chars', 'key_with_underscore'], 'underscore');
+    tree.set(['special-chars', 'key.with.dot'], 'dot');
+
+    const serialized = new DslSerializer().serialize(tree);
+    const parsed = new DslParser().parse(serialized);
+
+    expect(parsed.getJSON([])).toEqual(tree.getJSON([]));
+  });
+
+  test('should handle empty lists', () => {
+    const tree = new Tree();
+    tree.createList(['empty']);
+
+    const serialized = new DslSerializer().serialize(tree);
+    const parsed = new DslParser().parse(serialized);
+
+    expect(parsed.getJSON([])).toEqual(tree.getJSON([]));
+  });
+
+  test('should handle mixed types in lists', () => {
+    const tree = new Tree();
+    tree.createList(['mixed']);
+    tree.push(['mixed'], 'string');
+    tree.push(['mixed'], 42);
+    tree.push(['mixed'], true);
+    tree.push(['mixed'], null);
+    tree.push(['mixed'], { nested: 'value' });
+
+    const serialized = new DslSerializer().serialize(tree);
+    const parsed = new DslParser().parse(serialized);
+
+    expect(parsed.getJSON([])).toEqual(tree.getJSON([]));
+  });
+
+  test('should handle deeply nested structures', () => {
+    const tree = new Tree();
+    tree.set(['level1', 'level2', 'level3', 'level4', 'level5'], 'deep');
+
+    const serialized = new DslSerializer().serialize(tree);
+    const parsed = new DslParser().parse(serialized);
+
+    expect(parsed.getJSON([])).toEqual(tree.getJSON([]));
+  });
+
+  test('should handle boolean values', () => {
+    const tree = new Tree();
+    tree.set(['boolean', 'true'], true);
+    tree.set(['boolean', 'false'], false);
+
+    const serialized = new DslSerializer().serialize(tree);
+    const parsed = new DslParser().parse(serialized);
+
+    expect(parsed.getJSON([])).toEqual(tree.getJSON([]));
+  });
+
+  test('should handle null values', () => {
+    const tree = new Tree();
+    tree.set(['null', 'value'], null);
+
+    const serialized = new DslSerializer().serialize(tree);
+    const parsed = new DslParser().parse(serialized);
+
+    expect(parsed.getJSON([])).toEqual(tree.getJSON([]));
+  });
 });

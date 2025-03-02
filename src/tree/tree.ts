@@ -164,7 +164,8 @@ export class Tree {
     let current: NodeUnion = this.root;
     for (const [i, segment] of path.entries()) {
       if (current.type === 'data') {
-        throw new PathTypeMismatchError(path, i, 'tree|list', current.type);
+        // i - 1 because `current` was set in the last iteration
+        throw new PathTypeMismatchError(path, i - 1, 'tree|list', current.type);
       } else if (current.type === 'list') {
         const listNode = current as ListNode;
         const index = this.segmentToIndex(segment);
