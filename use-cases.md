@@ -216,3 +216,16 @@ for (const fileChanges of changedContents) {
 }
 $task('Create a description of the merge request based on all the summaries');
 ```
+
+### Extract character summary using recipe
+
+```typescript
+function extractCharacterSummary(character: string, text: string) {
+  const items = $lang.itemize(text);
+  const relevantItems = items.filter((item) =>
+    $check('Is this piece of text relevant to the character?', { item, character }),
+  );
+  const summary = $do('Summarize the important details we know about the character', relevantItems);
+  return summary;
+}
+```

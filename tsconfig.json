@@ -4,6 +4,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
+    "module": "ESNext",
     "target": "ESNext",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true
