@@ -11,28 +11,17 @@ export class DslSerializer {
       return '';
     }
 
-    const result: Record<string, any> = {};
+    // Use serializePath logic to get the base structure
+    const baseStructure = this.convertNodeToSerializable(root);
 
-    // Serialize root's children as top-level entries
-    for (const [key, child] of Object.entries(root.children)) {
-      result[key] = this.serializeNode(child);
-    }
+    // Extract root's children as top-level entries
+    const result = { ...baseStructure };
+    delete result.$module; // Remove root-level module marker if present
 
     // Post-process to collapse single-child chains
     const processedResult = this.collapseSingleChildChains(result);
 
-    const yamlOutput = YAML.stringify(processedResult, {
-      defaultKeyType: 'PLAIN' as const,
-      defaultStringType: 'BLOCK_LITERAL' as const,
-      lineWidth: 0,
-      sortMapEntries: (a, b) => {
-        if (a.key === '$module') return -1;
-        if (b.key === '$module') return 1;
-        return String(a.key).localeCompare(String(b.key));
-      },
-    });
-
-    return yamlOutput;
+    return this.yamlStringify(processedResult);
   }
 
   private collapseSingleChildChains(obj: Record<string, any>): Record<string, any> {
@@ -65,41 +54,49 @@ export class DslSerializer {
     return result;
   }
 
-  private serializeNode(node: NodeUnion): any {
+  private yamlStringify(data: any): string {
+    return YAML.stringify(data, {
+      defaultKeyType: 'PLAIN' as const,
+      defaultStringType: 'BLOCK_LITERAL' as const,
+      lineWidth: 0,
+      sortMapEntries: (a, b) => {
+        if (a.key === '$module') return -1;
+        if (b.key === '$module') return 1;
+        return String(a.key).localeCompare(String(b.key));
+      },
+    });
+  }
+
+  /**
+   * Serializes only a specific path and its children
+   * @param tree - The tree to serialize from
+   * @param path - The path to serialize
+   * @returns YAML string containing only the specified subtree
+   */
+  public serializePath(tree: Tree, path: string[]): string {
+    const node = tree.getNodeUnion(path);
+    const subtree = this.convertNodeToSerializable(node);
+    return this.yamlStringify(subtree);
+  }
+
+  private convertNodeToSerializable(node: NodeUnion): any {
     switch (node.type) {
-      case 'tree':
-        return this.serializeTreeNode(node);
-      case 'list':
-        return this.serializeListNode(node);
       case 'data':
-        return this.serializeDataNode(node);
+        return node.value;
+      case 'tree': {
+        const obj: Record<string, any> = {};
+        if (node.isModule) {
+          obj.$module = true;
+        }
+        for (const [key, child] of Object.entries(node.children)) {
+          obj[key] = this.convertNodeToSerializable(child);
+        }
+        return obj;
+      }
+      case 'list':
+        return node.children.map((child) => this.convertNodeToSerializable(child));
       default:
-        throw new Error(`Unknown node type: ${(node as any).type}`);
+        throw new Error(`Unexpected node type: ${(node as any).type}`);
     }
-  }
-
-  private serializeTreeNode(node: TreeNode): Record<string, any> {
-    const obj: Record<string, any> = {};
-
-    // Handle module declaration
-    if (node.isModule) {
-      obj.$module = true;
-    }
-
-    // Serialize children recursively
-    for (const [childKey, childNode] of Object.entries(node.children)) {
-      obj[childKey] = this.serializeNode(childNode);
-    }
-
-    return obj;
-  }
-
-  private serializeListNode(node: ListNode): any[] {
-    return node.children.map((child) => this.serializeNode(child));
-  }
-
-  private serializeDataNode(node: DataNode): any {
-    // Preserve multi-line strings and special types
-    return node.value;
   }
 }

@@ -7,25 +7,13 @@ export class DslParser {
   private tree: Tree;
   private currentPath: string[] = [];
 
-  constructor() {
-    this.tree = new Tree();
+  constructor(tree?: Tree) {
+    this.tree = tree || new Tree();
   }
 
   public parse(yamlContent: string): Tree {
-    // Handle empty content
-    if (yamlContent.trim() === '') {
-      return new Tree();
-    }
-
-    const data = parse(yamlContent);
-
-    // Handle null/undefined from empty YAML
-    if (data === null || data === undefined) {
-      return new Tree();
-    }
-
-    this.processNode([], data);
-    return this.tree;
+    this.tree = new Tree(); // Reset tree for fresh parse
+    return this.parseInto(yamlContent, []);
   }
 
   private processNode(path: string[], node: YamlNode): void {
@@ -68,5 +56,32 @@ export class DslParser {
       const itemPath = [...path, (index + 1).toString()];
       this.processNode(itemPath, item);
     });
+  }
+
+  /**
+   * Parses YAML content and merges it into an existing tree at a specific path
+   * @param yamlContent - The YAML content to parse
+   * @param path - The path where the content should be merged
+   * @returns The modified tree
+   */
+  public parseInto(yamlContent: string, path: string[]): Tree {
+    // Handle empty content
+    if (yamlContent.trim() === '') {
+      return this.tree;
+    }
+
+    const data = parse(yamlContent);
+
+    // Handle null/undefined from empty YAML
+    if (data === null || data === undefined) {
+      return this.tree;
+    }
+
+    // Ensure the parent path exists
+    this.tree.ensurePath(path, { skipLast: true });
+
+    // Process the node at the specified path
+    this.processNode(path, data);
+    return this.tree;
   }
 }

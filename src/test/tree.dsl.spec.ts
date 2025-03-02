@@ -198,4 +198,74 @@ describe('Tree DSL Serialization', () => {
 
     expect(parsed.getJSON([])).toEqual(tree.getJSON([]));
   });
+
+  test('should serialize specific path', () => {
+    const tree = new Tree();
+    tree.set(['root', 'value'], 'root');
+    tree.set(['subtree', 'nested', 'value'], 'nested');
+
+    const serialized = new DslSerializer().serializePath(tree, ['subtree']);
+    expect(serialized).toMatchSnapshot();
+    expect(serialized).toContain('nested');
+    expect(serialized).not.toContain('root');
+  });
+
+  test('should merge into specific path', () => {
+    const tree = new Tree();
+    tree.set(['existing', 'value'], 'original');
+
+    const yamlContent = `
+    new:
+      value: 'added'
+    `;
+
+    new DslParser(tree).parseInto(yamlContent, ['existing']);
+
+    expect(tree.get(['existing', 'new', 'value'])).toBe('added');
+    expect(tree.get(['existing', 'value'])).toBe('original');
+  });
+
+  test('should handle merging into empty path', () => {
+    const tree = new Tree();
+
+    const yamlContent = `
+    new:
+      value: 'added'
+    `;
+
+    new DslParser(tree).parseInto(yamlContent, ['new', 'path']);
+
+    expect(tree.get(['new', 'path', 'new', 'value'])).toBe('added');
+  });
+
+  test('should preserve existing structure when merging', () => {
+    const tree = new Tree();
+    tree.set(['root', 'existing'], 'value');
+
+    const yamlContent = `
+    new:
+      value: 'added'
+    `;
+
+    new DslParser(tree).parseInto(yamlContent, ['root']);
+
+    expect(tree.get(['root', 'existing'])).toBe('value');
+    expect(tree.get(['root', 'new', 'value'])).toBe('added');
+  });
+
+  test('should handle complex nested merges', () => {
+    const tree = new Tree();
+    tree.set(['root', 'nested', 'existing'], 'value');
+
+    const yamlContent = `
+    nested:
+      new:
+        value: 'added'
+    `;
+
+    new DslParser(tree).parseInto(yamlContent, ['root']);
+
+    expect(tree.get(['root', 'nested', 'existing'])).toBe('value');
+    expect(tree.get(['root', 'nested', 'new', 'value'])).toBe('added');
+  });
 });
