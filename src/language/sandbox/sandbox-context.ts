@@ -66,6 +66,21 @@ export async function addModuleTreeManipulationToContext(
 ) {
   const module = findModule(tree, functionPath);
 
+  context.c.$$merge = (path: string, value: object) => {
+    const fullPath = [...module, ...path.split('/')];
+    tree.insertObject(fullPath, value);
+  };
+
+  context.c.$$getTree = (path: string) => {
+    const fullPath = [...module, ...path.split('/')];
+    return tree.getJSON(fullPath);
+  };
+
+  context.c.$$exists = (path: string) => {
+    const fullPath = [...module, ...path.split('/')];
+    return tree.nodeExists(fullPath);
+  };
+
   context.c.$$push = (path: string, value: object) => {
     const fullPath = [...module, ...path.split('/')];
     tree.push(fullPath, value);
@@ -86,11 +101,6 @@ export async function addModuleTreeManipulationToContext(
     tree.delete(fullPath);
   };
 
-  context.c.$$getNodes = (path: string) => {
-    const fullPath = [...module, ...path.split('/')];
-    return tree.getJSON(fullPath);
-  };
-
   context.c.$$patchNode = (path: string, value: object) => {
     const fullPath = [...module, ...path.split('/')];
     tree.insert(fullPath, value);
@@ -105,11 +115,13 @@ export async function addModuleTreeManipulationToContext(
   context.c.$$call = createCallFunction(executionContext, module);
 
   context.typescriptCode += `
+    declare const $$merge: (path: string, value: object) => void;
+    declare const $$getTree: (path: string) => any;
+    declare const $$exists: (path: string) => boolean;
     declare const $$push: (path: string, value: object) => void;
     declare const $$set: (path: string, value: object) => void;
     declare const $$get: (path: string) => any;
     declare const $$delete: (path: string) => void;
-    declare const $$getNodes: (path: string) => any;
     declare const $$patchNode: (path: string, value: object) => void;
     declare const $$llm: (path: string, input: any) => Promise<any>;
     declare const $$call: (path: string) => (input: any) => Promise<any>;
@@ -124,6 +136,18 @@ export async function addTreeManipulationToContext(
   functionPath: string[],
 ) {
   context.c.$root = {
+    merge: (path: string, value: object) => {
+      const fullPath = path.split('/');
+      tree.insertObject(fullPath, value);
+    },
+    getTree: (path: string) => {
+      const fullPath = path.split('/');
+      return tree.getJSON(fullPath);
+    },
+    exists: (path: string) => {
+      const fullPath = path.split('/');
+      return tree.nodeExists(fullPath);
+    },
     push: (path: string, value: object) => {
       const fullPath = path.split('/');
       tree.push(fullPath, value);
@@ -140,25 +164,13 @@ export async function addTreeManipulationToContext(
       const fullPath = path.split('/');
       tree.delete(fullPath);
     },
-    getNodes: (path: string) => {
-      const fullPath = path.split('/');
-      return tree.getJSON(fullPath);
-    },
     patchNode: (path: string, value: object) => {
       const fullPath = path.split('/');
       tree.insert(fullPath, value);
     },
     llm: (path: string, input: any) => {
       const fullPath = path.split('/');
-      console.log('Full path:', fullPath);
-
-      // Use getNodeOrList instead of get to handle both tree and list nodes
-      const node = tree.getNodeOrList(fullPath);
-      console.log('Node from tree:', node);
-
       const llmConfig = tree.getJSON<LLMCall>(fullPath);
-      console.log('Extracted LLM config:', llmConfig);
-
       return runLLMCall(system, llmConfig, input);
     },
     call: createCallFunction(executionContext, []),
@@ -166,11 +178,13 @@ export async function addTreeManipulationToContext(
 
   context.typescriptCode += `
     declare const $root: {
+      merge: (path: string, value: object) => void;
+      getTree: (path: string) => any;
+      exists: (path: string) => boolean;
       push: (path: string, value: object) => void;
       set: (path: string, value: object) => void;
       get: (path: string) => any;
       delete: (path: string) => void;
-      getNodes: (path: string) => any;
       patchNode: (path: string, value: object) => void;
       llm: (path: string, input: any) => Promise<any>;
       call: (path: string) => (input: any) => Promise<any>;

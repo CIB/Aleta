@@ -267,26 +267,6 @@ describe('Sandbox', () => {
         ),
       ).rejects.toThrow(PathSegmentError);
     });
-
-    test('should handle root getNodes operation', async () => {
-      tree.set(['config', 'timeout'], 5000);
-      tree.set(['config', 'retries'], 3);
-
-      const result = await runInSandbox(
-        system,
-        executionContext,
-        [],
-        `
-        return $root.getNodes('config');
-      `,
-        undefined,
-      );
-
-      expect(result).toEqual({
-        timeout: 5000,
-        retries: 3,
-      });
-    });
   });
 
   test('should handle LLM calls through root.llm', async () => {
@@ -335,5 +315,125 @@ describe('Sandbox', () => {
     );
 
     expect(result).toBe('olleh');
+  });
+
+  describe('New Operations', () => {
+    test('should handle merge operation', async () => {
+      tree.set(['config', 'timeout'], 5000);
+
+      await runInSandbox(
+        system,
+        executionContext,
+        [],
+        `
+        $$merge('config', { timeout: 10000, retries: 3 });
+      `,
+        undefined,
+      );
+
+      expect(tree.get(['config', 'timeout'])).toBe(10000);
+      expect(tree.get(['config', 'retries'])).toBe(3);
+    });
+
+    test('should handle getTree operation', async () => {
+      tree.set(['config', 'timeout'], 5000);
+      tree.set(['config', 'retries'], 3);
+
+      const result = await runInSandbox(
+        system,
+        executionContext,
+        [],
+        `
+        return $$getTree('config');
+      `,
+        undefined,
+      );
+
+      expect(result).toEqual({
+        timeout: 5000,
+        retries: 3,
+      });
+    });
+
+    test('should handle exists operation', async () => {
+      tree.set(['config', 'timeout'], 5000);
+
+      const result = await runInSandbox(
+        system,
+        executionContext,
+        [],
+        `
+        return {
+          exists: $$exists('config/timeout'),
+          notExists: $$exists('config/retries')
+        };
+      `,
+        undefined,
+      );
+
+      expect(result).toEqual({
+        exists: true,
+        notExists: false,
+      });
+    });
+
+    test('should handle root merge operation', async () => {
+      tree.set(['config', 'timeout'], 5000);
+
+      await runInSandbox(
+        system,
+        executionContext,
+        [],
+        `
+        $root.merge('config', { timeout: 10000, retries: 3 });
+      `,
+        undefined,
+      );
+
+      expect(tree.get(['config', 'timeout'])).toBe(10000);
+      expect(tree.get(['config', 'retries'])).toBe(3);
+    });
+
+    test('should handle root getTree operation', async () => {
+      tree.set(['config', 'timeout'], 5000);
+      tree.set(['config', 'retries'], 3);
+
+      const result = await runInSandbox(
+        system,
+        executionContext,
+        [],
+        `
+        return $root.getTree('config');
+      `,
+        undefined,
+      );
+
+      expect(result).toEqual({
+        timeout: 5000,
+        retries: 3,
+      });
+    });
+
+    test('should handle root exists operation', async () => {
+      tree.set(['config', 'timeout'], 5000);
+
+      const result = await runInSandbox(
+        system,
+        executionContext,
+        [],
+        `
+        return {
+          exists: $root.exists('config/timeout'),
+          notExists: $root.exists('config/retries')
+        };
+      `,
+        undefined,
+      );
+
+      expect(result).toEqual({
+        exists: true,
+        notExists: false,
+      });
+    });
   });
 });

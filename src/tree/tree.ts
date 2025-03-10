@@ -773,9 +773,10 @@ export class Tree {
     return itemPath;
   }
 
-  nodeExists(path: string[]): boolean {
+  public nodeExists(path: string[]): boolean {
     try {
-      this.getNodeOrList(path);
+      // Try to get the node, regardless of its type
+      this.getNodeUnion(path);
       return true;
     } catch (e) {
       if (e instanceof PathNotFoundError) {
